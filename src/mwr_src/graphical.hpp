@@ -1664,17 +1664,14 @@ class VU_Meter : public RegisterTable {
         // 4-pixel-high horizontal bar at the bottom of the VU_Meter area
         uint16_t bar_h = 4;
     
-        if (m_h < bar_h)
-            bar_h = m_h;
+        uint16_t y = getTFT().logicalHeight() - 38; // six pixels above the start of the footer (which is h 32): 282
+        uint16_t cx = getTFT().logicalWidth() / 2; // half width of the screen: 240
     
-        uint16_t y = m_y + m_h - bar_h;
-        uint16_t cx = m_x + m_w / 2;
-    
-        uint16_t wL = map_l(left,  0, 60, 0, m_w / 2);
-        uint16_t wR = map_l(right, 0, 60, 0, m_w / 2);
+        uint16_t wL = map_l(left,  0, 60, 0, cx);
+        uint16_t wR = map_l(right, 0, 60, 0, cx);
     
         // Clear the complete VU area
-        getTFT().fillRect(m_x, y, m_w, bar_h, TFT_BLACK);
+        getTFT().fillRect(0, y, 2*cx, bar_h, TFT_BLACK);
     
         // Left channel
         if (wL > 0)
