@@ -190,7 +190,8 @@ constexpr uint16_t h_res = 480, v_res = 320; // horizontal - vertical resolution
 constexpr uint16_t h_footer = 32;            // footer height
 constexpr uint16_t hw_btn = 56 + 2;          // 56x56 + padding, normal buttons
 constexpr uint16_t hw_btn_s = 44 + 2;        // 44x45 + padding, small buttons
-constexpr uint16_t w_vuMeter = 32;           // width vuMeter
+constexpr uint16_t w_vuMeter = 0;           // -AC- from 32 to 0 -> the new Vu meter does not steal width from StreamTitle area
+constexpr uint16_t h_vuMeter = 6;           // -AC- the new Vu meter needs some heigth, though.
 
 constexpr uint16_t h_area = (v_res - 2 * h_footer) / 2;                      // 130, height area1 and  area2
 constexpr uint16_t y_area2 = v_res - h_footer - h_area;                      // 320 - 30 - 130, yPos area2
@@ -208,7 +209,8 @@ constexpr coor winName = coor().pos(h_area, h_footer).size(h_res - h_area, h_are
 constexpr coor winProgbar = coor().pos(0, y_progbar).size(h_res, h_progBar).pad(5, 5, 0, 0);        // or volume slider
 constexpr coor winArea1 = coor().pos(0, h_footer).size(h_res, h_area).pad(0, 5, 0, 3);
 constexpr coor winArea2 = coor().pos(0, y_area2).size(h_res, h_area).pad(0, 5, 0, 3);
-constexpr coor winSTitle = coor().pos(0, y_area2).size(h_res - w_vuMeter, h_area).pad(0, 4, 0, 3);
+//constexpr coor winSTitle = coor().pos(0, y_area2).size(h_res - w_vuMeter, h_area).pad(0, 4, 0, 3); //-AC- old vumeter
+constexpr coor winSTitle = coor().pos(0, y_area2).size(h_res, h_area - h_vuMeter).pad(0, 4, 0, 3); // -AC- new vuMeter does not interfere with the title width, but with its height
 constexpr coor winVUmeter = coor().pos(h_res - w_vuMeter, y_area2).size(w_vuMeter, h_area);
 constexpr coor winFooter = coor().pos(0, v_res - h_footer).size(h_res, h_footer);
 constexpr coor winButton = coor().pos(0, y_btn).size(hw_btn, hw_btn);
