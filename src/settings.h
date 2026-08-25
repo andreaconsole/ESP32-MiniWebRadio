@@ -147,8 +147,8 @@
         #define I2S_LRC            1
         #define I2S_MCLK           0
         #define BT_EMITTER_RX      -1 // TX pin - KCX Bluetooth Transmitter    (-1 if not available) -AC- no serial comm available
-        #define BT_EMITTER_TX      -1 // RX pin - KCX Bluetooth Transmitter    (-1 if not available)
-        #define BT_EMITTER_MODE    -1 // high transmit - low receive           (-1 if not available)
+        #define BT_EMITTER_TX      -1 // RX pin - KCX Bluetooth Transmitter    (-1 if not available) -AC- no serial comm available
+        #define BT_EMITTER_MODE    -1 // high transmit - low receive           (-1 if not available) -AC- no serial comm available
         #define BT_EMITTER_CONNECT 48 // high impulse -> awake after POWER_OFF (-1 if not available)
         #define I2C_SDA            41 // I2C, dala line for capacitive touchpadand and light sensor (-1 if not available)
         #define I2C_SCL            42 // I2C, clock line for capacitive touchpadand and light sensor (-1 if not available)
