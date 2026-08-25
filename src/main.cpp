@@ -1164,7 +1164,15 @@ void setup() {
         return;
     }
 
-    if (BT_EMITTER_RX >= 0) bt_emitter.begin();
+    //if (BT_EMITTER_RX >= 0) bt_emitter.begin(); -AC- I'll make no use of the BT library
+    if (AUDIO_SWITCH >= 0) { // -AC- Start as radio by setting the AUDIO_SWITCH
+        pinMode(AUDIO_SWITCH, OUTPUT);
+        digitalWrite(AUDIO_SWITCH, HIGH);  
+    }
+    if (BT_EMITTER_CONNECT >= 0) { // -AC- Set BT_EMITTER_CONNECT to high
+        pinMode(BT_EMITTER_CONNECT, OUTPUT);
+        digitalWrite(BT_EMITTER_CONNECT, HIGH);
+    }
 
     rec_buffer.alloc_array(REC_BUFFER_SIZE, "rec_buffer");                             // allocate in PSRAM
     writeBuffer.alloc_array(WRITE_CHUNK_SIZE, "writeBuffer");                          // allocate in PSRAM
@@ -1756,6 +1764,7 @@ void changeState(int8_t state, int8_t subState) {
 
     switch (state) {
         case RADIO: {
+            if (AUDIO_SWITCH >= 0) digitalWrite(AUDIO_SWITCH, HIGH);  // -AC- switch to RADIO
             if (newState) {
                 txt_RA_staName.setText("");
                 txt_RA_staName.show();
@@ -1968,16 +1977,28 @@ void changeState(int8_t state, int8_t subState) {
             break;
 
         case BLUETOOTH: {
-            btn_BT_volUp.show(); btn_BT_volDown.show(); btn_BT_pause.show(); btn_BT_mode.show();
-            btn_BT_radio.show(); btn_BT_power.show();
-            pic_BT_mode.show();
-            txt_BT_mode.set_bg_color(TFT_BROWN);
-            if (s_bt_emitter.mode.equals("RX")) { txt_BT_mode.setText("RECEIVER"); }
-            else                                { txt_BT_mode.setText("EMITTER"); }
-            txt_BT_mode.show();
-            ps_ptr<char> v;
-            v.assignf("Vol: {:02}", bt_emitter.getVolume());
-            dispFooter.updateFileNr(v);
+            // -AC- as I don't control the BT module via AT command, most of this stuff is useless
+            //btn_BT_volUp.show(); btn_BT_volDown.show(); btn_BT_pause.show(); btn_BT_mode.show();
+            //btn_BT_radio.show(); btn_BT_power.show();
+            //pic_BT_mode.show();
+            //txt_BT_mode.set_bg_color(TFT_BROWN);
+            //if (s_bt_emitter.mode.equals("RX")) { txt_BT_mode.setText("RECEIVER"); }
+            //else                                { txt_BT_mode.setText("EMITTER"); }
+            // txt_BT_mode.show();
+            //ps_ptr<char> v;
+            //v.assignf("Vol: {:02}", bt_emitter.getVolume());
+            //dispFooter.updateFileNr(v);
+            
+            //-AC- new code
+            btn_BT_radio.show(); //to get back to radio mode
+            if (AUDIO_SWITCH >= 0) digitalWrite(AUDIO_SWITCH, LOW);  // -AC- switch to BT
+            if (BT_EMITTER_CONNECT >= 0) { //-AC- shortly lower "connect" pin to reset BT connection
+                digitalWrite(BT_EMITTER_CONNECT, LOW); 
+                delay(200);
+                digitalWrite(BT_EMITTER_CONNECT, HIGH);  
+            }
+            // -AC- end of changes
+
             if (s_state != BLUETOOTH) webSrv.send("changeState=", "BLUETOOTH");
             break;
         }
