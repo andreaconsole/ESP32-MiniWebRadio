@@ -153,6 +153,7 @@
         #define I2C_SDA            41 // I2C, dala line for capacitive touchpadand and light sensor (-1 if not available)
         #define I2C_SCL            42 // I2C, clock line for capacitive touchpadand and light sensor (-1 if not available)
         #define AMP_ENABLED        -1 // onboard amplifier (-1 if not available)
+        #define AUDIO_SWITCH        46 // -AC- switch between radio and BT receiver (-1 if not available) 
     #endif                            // CONFIG_IDF_TARGET_ESP32S3
 
     #if CONFIG_IDF_TARGET_ESP32P4
