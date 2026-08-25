@@ -1489,6 +1489,8 @@ class VU_Meter : public RegisterTable {
     uint16_t         m_frame_y = 0;
     uint16_t         m_frame_w = 0;
     uint16_t         m_frame_h = 0;
+    uint8_t m_VUleftCh  = 0; // -AC- new VU-METER
+    uint8_t m_VUrightCh = 0; // -AC- new VU-METER
 
     enum SegmentState : uint8_t { OFF, BAR, PEAK };
     uint16_t                  m_numSegments = 26;
@@ -1533,40 +1535,53 @@ class VU_Meter : public RegisterTable {
     void         set_transparency(bool transparency) { m_transparency = transparency; }
 
     void show() {
-        if (m_first_call) {
-            m_cache_bg.alloc_array(m_w * m_h, m_name.c_get());
-            getTFT().copyFramebuffer(FB_VISIBLE, m_cache_bg.get(), m_x, m_y, m_w, m_h);
-        }
-        if (m_transparency) {
-            getTFT().copyFramebuffer(m_cache_bg.get(), FB_VISIBLE, m_x, m_y, m_w, m_h);
-        } else if (m_bg_color == TFT_TRANSPARENT) {
-            getTFT().copyFramebuffer(FB_BACKGROUND, FB_VISIBLE, m_x, m_y, m_w, m_h);
-        } else {
-            getTFT().fillRect(m_x, m_y, m_w, m_h, m_bg_color);
-            getTFT().drawRect(m_frame_x, m_frame_y, m_frame_w, m_frame_h, m_frameColor);
-        }
-
-        for (uint16_t i = 0; i < m_numSegments; i++) {
-            m_leftState[i] = OFF;
-            m_rightState[i] = OFF;
-            drawRect(i, 0, 0);
-            drawRect(i, 1, 0);
-        }
+        // -AC- new code for new VU-METER
         m_first_call = false;
         m_enabled = true;
         m_clicked = false;
+        m_VUleftCh = 0;
+        m_VUrightCh = 0;
+        drawBar(0, 0);
+        
+        //if (m_first_call) {
+        //    m_cache_bg.alloc_array(m_w * m_h, m_name.c_get());
+        //    getTFT().copyFramebuffer(FB_VISIBLE, m_cache_bg.get(), m_x, m_y, m_w, m_h);
+        //}
+        //if (m_transparency) {
+        //    getTFT().copyFramebuffer(m_cache_bg.get(), FB_VISIBLE, m_x, m_y, m_w, m_h);
+        //} else if (m_bg_color == TFT_TRANSPARENT) {
+        //    getTFT().copyFramebuffer(FB_BACKGROUND, FB_VISIBLE, m_x, m_y, m_w, m_h);
+        //} else {
+        //    getTFT().fillRect(m_x, m_y, m_w, m_h, m_bg_color);
+        //    getTFT().drawRect(m_frame_x, m_frame_y, m_frame_w, m_frame_h, m_frameColor);
+        //}
+
+        //for (uint16_t i = 0; i < m_numSegments; i++) {
+        //    m_leftState[i] = OFF;
+        //    m_rightState[i] = OFF;
+        //    drawRect(i, 0, 0);
+        //    drawRect(i, 1, 0);
+        //}
+        //m_first_call = false;
+        //m_enabled = true;
+        //m_clicked = false;
     }
 
     void hide() {
-        if (m_first_call) return;
-        if (m_transparency) {
-            getTFT().copyFramebuffer(m_cache_bg.get(), FB_VISIBLE, m_x, m_y, m_w, m_h);
-        } else if (m_bg_color == TFT_TRANSPARENT) {
-            getTFT().copyFramebuffer(FB_BACKGROUND, FB_VISIBLE, m_x, m_y, m_w, m_h);
-        } else {
-            getTFT().fillRect(m_x, m_y, m_w, m_h, m_bg_color);
-        }
+        // -AC- new code for new VU-METER
+        if (!m_enabled) return;
+        drawBar(0, 0); // erase before hiding
         m_enabled = false;
+        
+        //if (m_first_call) return;
+        //if (m_transparency) {
+        //    getTFT().copyFramebuffer(m_cache_bg.get(), FB_VISIBLE, m_x, m_y, m_w, m_h);
+        //} else if (m_bg_color == TFT_TRANSPARENT) {
+        //    getTFT().copyFramebuffer(FB_BACKGROUND, FB_VISIBLE, m_x, m_y, m_w, m_h);
+        //} else {
+        //    getTFT().fillRect(m_x, m_y, m_w, m_h, m_bg_color);
+        //}
+        //m_enabled = false;
     }
 
     void getBounds(int16_t& x, int16_t& y, int16_t& w, int16_t& h) override {
@@ -1606,13 +1621,24 @@ class VU_Meter : public RegisterTable {
     }
 
     void update(uint8_t l, uint8_t r, uint8_t peak_l, uint8_t peak_r) {
-        uint16_t bars_left = map_l(l, 0, 255, 0, m_numSegments - 1);
-        uint16_t bars_right = map_l(r, 0, 255, 0, m_numSegments - 1);
-        uint16_t peak_left = map_l(peak_l, 0, 255, 0, m_numSegments - 1);
-        uint16_t peak_right = map_l(peak_r, 0, 255, 0, m_numSegments - 1);
+        // -AC- new code for new VU-METER
+        if (!m_enabled) return;
+        uint8_t left  = map_l(l, 0, 255, 0, 60);
+        uint8_t right = map_l(r, 0, 255, 0, 60);
+        if (left == m_VUleftCh && right == m_VUrightCh) return;
+        xSemaphoreTake(mutex_display, portMAX_DELAY);
+        drawBar(left, right);
+        m_VUleftCh  = left;
+        m_VUrightCh = right;
+        xSemaphoreGive(mutex_display);
+        
+        //uint16_t bars_left = map_l(l, 0, 255, 0, m_numSegments - 1);
+        //uint16_t bars_right = map_l(r, 0, 255, 0, m_numSegments - 1);
+        //uint16_t peak_left = map_l(peak_l, 0, 255, 0, m_numSegments - 1);
+        //uint16_t peak_right = map_l(peak_r, 0, 255, 0, m_numSegments - 1);
 
-        buildState(bars_left, peak_left, l > 0, m_leftState, true);
-        buildState(bars_right, peak_right, r > 0, m_rightState, false);
+        //buildState(bars_left, peak_left, l > 0, m_leftState, true);
+        //buildState(bars_right, peak_right, r > 0, m_rightState, false);
     }
 
     bool positionXY(uint16_t x, uint16_t y) {
@@ -1634,6 +1660,31 @@ class VU_Meter : public RegisterTable {
     }
 
   private:
+    void drawBar(uint8_t left, uint8_t right) { //-AC- new function - drawRect (below) is now unused. Kept for memory
+        // 4-pixel-high horizontal bar at the bottom of the VU_Meter area
+        uint16_t bar_h = 4;
+    
+        if (m_h < bar_h)
+            bar_h = m_h;
+    
+        uint16_t y = m_y + m_h - bar_h;
+        uint16_t cx = m_x + m_w / 2;
+    
+        uint16_t wL = map_l(left,  0, 60, 0, m_w / 2);
+        uint16_t wR = map_l(right, 0, 60, 0, m_w / 2);
+    
+        // Clear the complete VU area
+        getTFT().fillRect(m_x, y, m_w, bar_h, TFT_BLACK);
+    
+        // Left channel
+        if (wL > 0)
+            getTFT().fillRect(cx - wL, y, wL, bar_h, TFT_GREEN);
+    
+        // Right channel
+        if (wR > 0)
+            getTFT().fillRect(cx, y, wR, bar_h, TFT_GREEN);
+    }
+
     void drawRect(uint16_t row, uint8_t col, bool br) {
         if (row >= m_numSegments || col > 1) return;
 
