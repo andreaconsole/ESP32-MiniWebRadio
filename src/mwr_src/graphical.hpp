@@ -1676,11 +1676,12 @@ class VU_Meter : public RegisterTable {
         const uint16_t wR_1 = wR * sin(1.57 * right / 60.0);
 
         // Clear the complete VU bar area
+        getTFT().fillRect(0, y - 1, cx * 2, bar_h + 2, TFT_BLACK);
         getTFT().fillRect(0, y, cx * 2, bar_h, TFT_DARKGREEN);
 
         // Left channel
         if (wL > 0) {
-            getTFT().fillRect(cx - wL, y, wL, bar_h, TFT_GREEN);
+            getTFT().fillRect(cx - wL, y - 1, wL, bar_h + 2, TFT_GREEN);
 
             if (wL_1 > 0)
                 getTFT().fillRect(cx - wL_1, y, wL_1, bar_h, TFT_LIGHTGREEN);
@@ -1688,11 +1689,14 @@ class VU_Meter : public RegisterTable {
 
         // Right channel
         if (wR > 0) {
-            getTFT().fillRect(cx, y, wR, bar_h, TFT_GREEN);
+            getTFT().fillRect(cx, y - 1, wR, bar_h + 2, TFT_GREEN);
 
             if (wR_1 > 0)
                 getTFT().fillRect(cx, y, wR_1, bar_h, TFT_LIGHTGREEN);
         }
+
+        // Dark center separator representing the tube's shadow.
+        getTFT().fillRect(cx - 1, y - 1, 2, barH + 2, TFT_DARKGREEN);
     }
 
     void drawRect(uint16_t row, uint8_t col, bool br) {
