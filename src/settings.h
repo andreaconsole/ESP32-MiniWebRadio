@@ -23,7 +23,7 @@
 #define BRIGHTNESS_INVERSION 0        // (0) off (1) on
 #define TP_CONTROLLER        1        // (0)XPT2046 2.8", (1)XPT2046 3.5" or 4.0", (7)GT911, (8)FT6x63
 #define TP_ROTATION          2        // (0) none, (1) 90°CW, (2) 180°CW, (3) 270°CW
-#define TP_H_MIRROR          0        // (0) default, (1) mirror left <-> right
+#define TP_H_MIRROR          1        // (0) default, (1) mirror left <-> right
 #define TP_V_MIRROR          0        // (0) default, (1) mirror up <-> down
 #define I2S_COMM_FMT         0        // (0) MAX98357A PCM5102A CS4344, (1) LSBJ (Least Significant Bit Justified format) PT8211
 #define SDMMC_FREQUENCY      80000000 // 80000000 or 40000000 Hz
@@ -119,7 +119,7 @@
         #define TFT_ROTATION      0
         #define TP_CONTROLLER     1 // 3.5" or 4.0"
         #define TP_ROTATION       2
-        #define DISPLAY_INVERSION 0
+        #define DISPLAY_INVERSION 1
     #endif
     #if (SPI_DISPLAY == 3)
         #define TFT_CONTROLLER    5 // ILI9488 or ST7796
