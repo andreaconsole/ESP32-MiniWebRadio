@@ -1696,7 +1696,7 @@ class VU_Meter : public RegisterTable {
         }
 
         // Dark center separator representing the tube's shadow.
-        getTFT().fillRect(cx - 1, y - 1, 2, barH + 2, TFT_DARKGREEN);
+        getTFT().fillRect(cx - 1, y - 1, 2, bar_h + 2, TFT_DARKGREEN);
     }
 
     void drawRect(uint16_t row, uint8_t col, bool br) {
