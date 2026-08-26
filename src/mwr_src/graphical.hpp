@@ -1660,26 +1660,39 @@ class VU_Meter : public RegisterTable {
     }
 
   private:
-    void drawBar(uint8_t left, uint8_t right) { //-AC- new function - drawRect (below) is now unused. Kept for memory
+    void drawBar(uint8_t left, uint8_t right) { //-AC- new function
         // 4-pixel-high horizontal bar at the bottom of the VU_Meter area
-        uint16_t bar_h = 4;
-    
-        uint16_t y = getTFT().logicalHeight() - 38; // six pixels above the start of the footer (which is h 32): 282
-        uint16_t cx = getTFT().logicalWidth() / 2; // half width of the screen: 240
-    
-        uint16_t wL = map_l(left,  0, 60, 0, cx);
-        uint16_t wR = map_l(right, 0, 60, 0, cx);
-    
-        // Clear the complete VU area
-        getTFT().fillRect(0, y, 2*cx, bar_h, TFT_BLACK);
-    
+        const uint16_t bar_h = 4;
+
+        const uint16_t y  = getTFT().logicalHeight() - 38;
+        const uint16_t cx = getTFT().logicalWidth() / 2;
+
+        // Total bar widths: linear response, 0..60 -> 0..half screen
+        const uint16_t wL = map_l(left,  0, 60, 0, cx);
+        const uint16_t wR = map_l(right, 0, 60, 0, cx);
+
+        // Light-green section: sinusoidal response on the width of the total bar
+        const uint16_t wL_1 = wL * sin(1.57 * left  / 60.0);
+        const uint16_t wR_1 = wR * sin(1.57 * right / 60.0);
+
+        // Clear the complete VU bar area
+        getTFT().fillRect(0, y, cx * 2, bar_h, TFT_DARKGREEN);
+
         // Left channel
-        if (wL > 0)
+        if (wL > 0) {
             getTFT().fillRect(cx - wL, y, wL, bar_h, TFT_GREEN);
-    
+
+            if (wL_1 > 0)
+                getTFT().fillRect(cx - wL_1, y, wL_1, bar_h, TFT_LIGHTGREEN);
+        }
+
         // Right channel
-        if (wR > 0)
+        if (wR > 0) {
             getTFT().fillRect(cx, y, wR, bar_h, TFT_GREEN);
+
+            if (wR_1 > 0)
+                getTFT().fillRect(cx, y, wR_1, bar_h, TFT_LIGHTGREEN);
+        }
     }
 
     void drawRect(uint16_t row, uint8_t col, bool br) {
