@@ -116,9 +116,9 @@
     #endif
     #if (SPI_DISPLAY == 2)
         #define TFT_CONTROLLER    5 // ILI9488 or ST7796
-        #define TFT_ROTATION      0
+        #define TFT_ROTATION      2
         #define TP_CONTROLLER     1 // 3.5" or 4.0"
-        #define TP_ROTATION       2
+        #define TP_ROTATION       0
         #define DISPLAY_INVERSION 1
     #endif
     #if (SPI_DISPLAY == 3)

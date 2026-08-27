@@ -191,7 +191,7 @@ constexpr uint16_t h_footer = 32;            // footer height
 constexpr uint16_t hw_btn = 56 + 2;          // 56x56 + padding, normal buttons
 constexpr uint16_t hw_btn_s = 44 + 2;        // 44x45 + padding, small buttons
 constexpr uint16_t w_vuMeter = 0;           // -AC- from 32 to 0 -> the new Vu meter does not steal width from StreamTitle area
-constexpr uint16_t h_vuMeter = 6;           // -AC- the new Vu meter needs some heigth, though.
+constexpr uint16_t h_vuMeter = 10;           // -AC- the new Vu meter needs some heigth, though.
 
 constexpr uint16_t h_area = (v_res - 2 * h_footer) / 2;                      // 130, height area1 and  area2
 constexpr uint16_t y_area2 = v_res - h_footer - h_area;                      // 320 - 30 - 130, yPos area2

@@ -796,8 +796,19 @@ bool connectToWiFi() {
         i++;
         if (i > 10) break; // max 20s
     }
+    for (int attempt = 0; attempt < 3; attempt++) {
+        wifiMulti.run();
+        int i = 0;
+        while (WiFi.status() != WL_CONNECTED && i < 20) { vTaskDelay(1000); i++; }
+        if (WiFi.status() == WL_CONNECTED) break;
+        printfln(s_tag.wifi_info, ANSI_ESC_YELLOW "Connect attempt {} failed, status={}", attempt + 1, (int)WiFi.status());
+        WiFi.disconnect(false, false);
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
     if (WiFi.status() != WL_CONNECTED) {
         printfln(s_tag.wifi_info, ANSI_ESC_RED "WiFi credentials are not correct");
+        WiFi.disconnect(true, true);    // stop pending connect attempt so scan works later
+        vTaskDelay(pdMS_TO_TICKS(200)); // let the driver settle
         return false;
     }
     printfln(s_tag.wifi_info, ANSI_ESC_GREEN "WiFi connected");
@@ -1765,6 +1776,16 @@ void changeState(int8_t state, int8_t subState) {
     switch (state) {
         case RADIO: {
             if (AUDIO_SWITCH >= 0) digitalWrite(AUDIO_SWITCH, HIGH);  // -AC- switch to RADIO
+            // -AC- Unmute when returning from Bluetooth
+            if (newState && s_state == BLUETOOTH) {
+                muteChanged(false);
+            }
+            
+            if (BT_EMITTER_CONNECT >= 0) { //-AC- shortly lower "connect" pin to reset BT connection
+                digitalWrite(BT_EMITTER_CONNECT, LOW); 
+                delay(200);
+                digitalWrite(BT_EMITTER_CONNECT, HIGH);  
+            }
             if (newState) {
                 txt_RA_staName.setText("");
                 txt_RA_staName.show();
@@ -1991,6 +2012,11 @@ MWR_LOG_ERROR("audio.isRunning {}", audio.isRunning());
             //dispFooter.updateFileNr(v);
             
             //-AC- new code
+            // Mute radio audio when switching to Bluetooth
+            if (newState && s_state == RADIO) {
+                muteChanged(true);
+            }
+
             btn_BT_radio.show(); //to get back to radio mode
             if (AUDIO_SWITCH >= 0) digitalWrite(AUDIO_SWITCH, LOW);  // -AC- switch to BT
             if (BT_EMITTER_CONNECT >= 0) { //-AC- shortly lower "connect" pin to reset BT connection
@@ -2027,28 +2053,30 @@ MWR_LOG_ERROR("audio.isRunning {}", audio.isRunning());
             cls_wifiSettings.clearText();
             cls_wifiSettings.setFontSize(displayConfig.listFontSize);
             {
-                int16_t n = WiFi.scanNetworks();
-                printfln(s_tag.wifi_info, ANSI_ESC_CYAN "{}" ANSI_ESC_RESET " WiFi networks found", n);
-                if(n <= 0) break;
-                for (int i = 0; i < n; i++) {
-                    printfln(s_tag.wifi_info, ANSI_ESC_GREEN"{} ({})", WiFi.SSID(i).c_str(), (int16_t)WiFi.RSSI(i));
-                    ps_ptr<char> pw = get_WiFi_PW(WiFi.SSID(i).c_str());
-                    cls_wifiSettings.add_WiFi_Items(WiFi.SSID(i).c_str(), pw.c_get());
+                WiFi.scanDelete();          // clear any stale scan result first
+                int16_t n = -2;
+                int retries = 5;
+                while (retries-- > 0) {
+                    n = WiFi.scanNetworks();   // synchronous scan
+                    if (n >= 0) break;         // -1 = still running, -2 = failed
+                    delay(300);
+                }
+                printfln(s_tag.wifi_info, "{} WiFi networks found", n);
+
+                if (n <= 0) {
+                    // show the actual result on-screen instead of leaving it blank
+                    ps_ptr<char> msg;
+                    msg.assignf("Scan result: {}  (retry)", n);
+                    cls_wifiSettings.add_WiFi_Items(msg.c_get(), "");
+                } else {
+                    for (int i = 0; i < n; i++) {
+                        ps_ptr<char> pw = get_WiFi_PW(WiFi.SSID(i).c_str());
+                        cls_wifiSettings.add_WiFi_Items(WiFi.SSID(i).c_str(), pw.c_get());
+                    }
                 }
             }
-            cls_wifiSettings.show();
+            cls_wifiSettings.show();   // ALWAYS reached now, page will always draw
             break;
-
-        case SLEEP:
-            dispHeader.hide();
-            dispFooter.hide();
-            if (subState == 0) {
-                setTFTbrightness(s_brightness, s_bh1750Value);
-            }
-            if (subState == 1) {
-                clk_CL_24.show();
-            }
-        break;
     }
     s_ir_btn_select = UNDEFINED;
     s_state = state;

@@ -1462,6 +1462,14 @@ class Textbutton : public RegisterTable {
     }
 };
 // ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+constexpr uint16_t rgb565(uint8_t r, uint8_t g, uint8_t b)
+{
+    return ((r & 0xF8) << 8) |
+           ((g & 0xFC) << 3) |
+           (b >> 3);
+}
+
 class VU_Meter : public RegisterTable {
   private:
     uint16_t         m_x = 0;
@@ -1659,46 +1667,113 @@ class VU_Meter : public RegisterTable {
         return true;
     }
 
-  private:
-    void drawBar(uint8_t left, uint8_t right) { //-AC- new function
-        // 4-pixel-high horizontal bar at the bottom of the VU_Meter area
-        const uint16_t bar_h = 4;
 
-        const uint16_t y  = getTFT().logicalHeight() - 38;
-        const uint16_t cx = getTFT().logicalWidth() / 2;
+private:
+    static constexpr uint16_t VU_VERYDARKGREEN  = rgb565(16, 50, 36);
+    static constexpr uint16_t VU_DARKGREEN      = rgb565(30, 95, 68);
+    static constexpr uint16_t VU_GREEN          = rgb565(50, 150, 100);
+    static constexpr uint16_t VU_LIGHTGREEN     = rgb565(80, 255, 180);
 
-        // Total bar widths: linear response, 0..60 -> 0..half screen
-        const uint16_t wL = map_l(left,  0, 60, 0, cx);
-        const uint16_t wR = map_l(right, 0, 60, 0, cx);
+    bool drawBar(uint8_t left, uint8_t right)
+    {
+        constexpr uint16_t bar_h      = 6;
+        constexpr uint16_t MIN_PIXELS = 4;
+        static const int y  = (int)getTFT().logicalHeight() - 42;
+        static const int cx = (int)getTFT().logicalWidth() / 2;
+        // Max bar reach: 1px inset from center, permanently reserved for the separator
+        static const uint16_t maxW = (cx > 0) ? (cx - 1) : 0;
+        static const int yHaloTop = std::max(y - 1, 0);
+        static const int yHaloBot = y + bar_h;
 
-        // Light-green section: sinusoidal response on the width of the total bar
-        const uint16_t wL_1 = wL * sin(1.57 * left  / 60.0);
-        const uint16_t wR_1 = wR * sin(1.57 * right / 60.0);
+        // Outer (plain-green) widths and inner (highlight/core) widths,
+        // both needed since the delta-based redraw below depends on both.
+        static uint16_t prevWL = 0, prevWR = 0;
+        static uint16_t prevWL1 = 0, prevWR1 = 0;
 
-        // Clear the complete VU bar area
-        getTFT().fillRect(0, y - 1, cx * 2, bar_h + 2, TFT_BLACK);
-        getTFT().fillRect(0, y, cx * 2, bar_h, TFT_DARKGREEN);
+        left  = std::min<uint8_t>(left, 60);
+        right = std::min<uint8_t>(right, 60);
 
-        // Left channel
-        if (wL > 0) {
-            getTFT().fillRect(cx - wL, y - 1, wL, bar_h + 2, TFT_GREEN);
-
-            if (wL_1 > 0)
-                getTFT().fillRect(cx - wL_1, y, wL_1, bar_h, TFT_LIGHTGREEN);
+        const uint16_t wL  = map_l(left,  0, 60, 0, maxW);
+        const uint16_t wR  = map_l(right, 0, 60, 0, maxW);
+        const uint16_t wL1 = (uint16_t)(wL * sin(HALF_PI * left  / 60.0));
+        const uint16_t wR1 = (uint16_t)(wR * sin(HALF_PI * right / 60.0));
+        
+        //Create the initial shape of the Vu-meter (it fires only once)
+        static bool initDraw = false;
+        if (!initDraw) {
+            getTFT().fillRect(0,      y, maxW, bar_h, VU_DARKGREEN); // left track
+            getTFT().fillRect(cx + 1, y, maxW, bar_h, VU_DARKGREEN); // right track
+            getTFT().fillRect(cx - 1, yHaloTop, 2, bar_h + 2, VU_VERYDARKGREEN);
+            initDraw = true;
         }
 
-        // Right channel
-        if (wR > 0) {
-            getTFT().fillRect(cx, y - 1, wR, bar_h + 2, TFT_GREEN);
+        // Redraw a channel if EITHER the outer edge or the highlight edge
+        // moved enough — the highlight is nonlinear in `left`/`right`, so
+        // it can move ≥MIN_PIXELS even when the outer edge doesn't.
+        const bool updateL = abs((int)wL  - (int)prevWL)  >= MIN_PIXELS ||
+                             abs((int)wL1 - (int)prevWL1) >= MIN_PIXELS;
+        const bool updateR = abs((int)wR  - (int)prevWR)  >= MIN_PIXELS ||
+                             abs((int)wR1 - (int)prevWR1) >= MIN_PIXELS;
 
-            if (wR_1 > 0)
-                getTFT().fillRect(cx, y, wR_1, bar_h, TFT_LIGHTGREEN);
+        // --------------------------------------------------------------
+        // LEFT CHANNEL
+        // --------------------------------------------------------------
+        if (updateL) {
+            // Outer track — normal height only, never touches halo rows
+            if (wL > prevWL) {
+                getTFT().fillRect((cx - 1) - wL, y, wL - prevWL, bar_h, VU_GREEN);
+            } else if (wL < prevWL) {
+                getTFT().fillRect((cx - 1) - prevWL, y, prevWL - wL, bar_h, VU_DARKGREEN);
+            }
+
+            // Highlight — core + halo together while growing
+            if (wL1 > prevWL1) {
+                getTFT().fillRect((cx - 1) - wL1, yHaloTop, wL1 - prevWL1, bar_h + 2, VU_DARKGREEN);
+                getTFT().fillRect((cx - 1) - wL1, y       , wL1 - prevWL1, bar_h    , VU_LIGHTGREEN);
+            } else if (wL1 < prevWL1) {
+                // Core rows revert to plain green, bounded by the current outer edge
+                const uint16_t restoreEnd = std::min(prevWL1, wL);
+                if (restoreEnd > wL1) {
+                    getTFT().fillRect((cx - 1) - restoreEnd, y, restoreEnd - wL1, bar_h, VU_GREEN);
+                }
+                // Halo rows are only ever VU_DARKGREEN-or-VU_VERYDARKGREEN — fully vacate them
+                getTFT().fillRect((cx - 1) - prevWL1, yHaloTop, prevWL1 - wL1, 1, VU_VERYDARKGREEN);
+                getTFT().fillRect((cx - 1) - prevWL1, yHaloBot, prevWL1 - wL1, 1, VU_VERYDARKGREEN);
+            }
+
+            prevWL  = wL;
+            prevWL1 = wL1;
         }
 
-        // Dark center separator representing the tube's shadow.
-        getTFT().fillRect(cx - 1, y - 1, 2, bar_h + 2, TFT_DARKGREEN);
+        // --------------------------------------------------------------
+        // RIGHT CHANNEL — mirror of the left
+        // --------------------------------------------------------------
+        if (updateR) {
+            if (wR > prevWR) {
+                getTFT().fillRect((cx + 1) + prevWR, y, wR - prevWR, bar_h, VU_GREEN);
+            } else if (wR < prevWR) {
+                getTFT().fillRect((cx + 1) + wR, y, prevWR - wR, bar_h, VU_DARKGREEN);
+            }
+
+            if (wR1 > prevWR1) {
+                getTFT().fillRect((cx + 1) + prevWR1, yHaloTop, wR1 - prevWR1, bar_h + 2, VU_DARKGREEN);
+                getTFT().fillRect((cx + 1) + prevWR1, y       , wR1 - prevWR1, bar_h    , VU_LIGHTGREEN);
+            } else if (wR1 < prevWR1) {
+                const uint16_t restoreEnd = std::min(prevWR1, wR);
+                if (restoreEnd > wR1) {
+                    getTFT().fillRect((cx + 1) + wR1, y, restoreEnd - wR1, bar_h, VU_GREEN);
+                }
+                getTFT().fillRect((cx + 1) + wR1, yHaloTop, prevWR1 - wR1, 1, VU_VERYDARKGREEN);
+                getTFT().fillRect((cx + 1) + wR1, yHaloBot, prevWR1 - wR1, 1, VU_VERYDARKGREEN);
+            }
+
+            prevWR  = wR;
+            prevWR1 = wR1;
+        }
+
+        return updateL || updateR;
     }
-
+    
     void drawRect(uint16_t row, uint8_t col, bool br) {
         if (row >= m_numSegments || col > 1) return;
 
