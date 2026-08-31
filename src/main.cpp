@@ -1755,6 +1755,16 @@ void changeState(int8_t state, int8_t subState) {
     dispFooter.enable();
     if(state != s_state) { dispHeader.updateItem(_hl_item[state]); }
 
+    //-AC- Header and footer disappear from the display to make it less noisy when untouched
+    if (subState == 0) { 
+        dispHeader.hide();
+        dispFooter.hide();
+    } else { 
+        dispHeader.show();
+        dispFooter.show();
+    }
+    // -AC- end change
+    
     s_subState_radio  = UNDEFINED;
     s_subState_player = UNDEFINED;
     s_subState_clock  = UNDEFINED;
