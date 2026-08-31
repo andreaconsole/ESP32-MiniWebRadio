@@ -2,8 +2,13 @@
  *  index.h
  *
  *  Created on: 04.10.2018
- *  Updated on: 12.12.2025
- *      Author: Wolle
+ *  Updated on: 31.08.2026
+ *      Author: Wolle + ChatGPT
+ *	changes: : 
+ *       - mobile-friendly responsive layout added
+ *       -  only deliberate interactions with the hardware allowed 
+ *          (e.g., no automatic commands sent on tab change).
+ *       - a couple of comments in German translated.
  *
  *  successfully tested with Chrome and Firefox
  *
@@ -32,6 +37,7 @@ const char index_html[] PROGMEM = R"=====(
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="content-style-type" content="text/css">
     <meta http-equiv="expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css">
@@ -448,6 +454,376 @@ const char index_html[] PROGMEM = R"=====(
             display: none; /* Anfangs versteckt */
             z-index: 1000; /* Sicherstellen, dass es über anderen Elementen liegt */
         }
+
+        /* ---------------------------------------------------------------
+           Responsive layout
+           Desktop keeps the original geometry. On phones the fixed-width
+           desktop layout is converted to a fluid, touch-friendly layout.
+           ------------------------------------------------------------- */
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        #content {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .mwr-navbar {
+            align-items: center;
+            min-height: 66px;
+        }
+
+        .mwr-navbar > div:first-child {
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 2px;
+        }
+
+        .mwr-navbar img {
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .mwr-mode-switch {
+            min-width: 112px;
+            height: 44px;
+            margin: 4px 4px 4px 8px;
+            padding: 0 12px;
+            border: 1px solid #006b5a;
+            border-radius: 8px;
+            background: #128F76;
+            color: #fff;
+            font: bold 16px/1 Arial, sans-serif;
+            cursor: pointer;
+            touch-action: manipulation;
+            white-space: nowrap;
+        }
+
+        .mwr-mode-switch:active {
+            transform: scale(0.97);
+        }
+
+        @media (max-width: 700px) {
+            html {
+                font-size: 16px;
+                width: 100%;
+                min-width: 0;
+            }
+
+            body {
+                width: 100%;
+                min-width: 0;
+            }
+
+            #content {
+                min-width: 0 !important;
+                min-height: 0 !important;
+                width: 100% !important;
+                max-width: 100vw !important;
+                padding: 6px !important;
+                overflow-x: hidden;
+            }
+
+            /* ---------- top navigation ---------- */
+            .mwr-navbar {
+                height: auto !important;
+                min-height: 0 !important;
+                width: 100%;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                justify-content: center;
+                gap: 4px;
+                padding: 2px 0 6px !important;
+            }
+
+            .mwr-navbar > div:first-child {
+                flex: 0 0 100% !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                display: grid !important;
+                grid-template-columns: repeat(5, minmax(48px, 1fr));
+                align-items: center;
+                justify-items: center;
+                gap: 4px;
+            }
+
+            .mwr-navbar > div:first-child > img {
+                width: 48px !important;
+                height: 48px !important;
+                max-width: 48px !important;
+                object-fit: contain;
+                margin: 0 !important;
+            }
+
+            .mwr-mode-switch {
+                width: 100%;
+                min-width: 0;
+                max-width: 112px;
+                height: 44px;
+                margin: 2px !important;
+                padding: 0 6px;
+                font-size: 14px;
+            }
+
+            .mwr-title {
+                order: 2;
+                flex: 0 0 100% !important;
+                width: 100% !important;
+                font-size: clamp(24px, 8vw, 32px) !important;
+                line-height: 1.15;
+                text-align: center !important;
+                padding: 2px 0 4px !important;
+            }
+
+            /* ---------- common tab geometry ---------- */
+            #tab-content1,
+            #tab-content2,
+            #tab-content3,
+            #tab-content4,
+            #tab-content5,
+            #tab-content6,
+            #tab-content7,
+            #tab-content8,
+            #tab-content9 {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                height: auto !important;
+                margin: 10px 0 !important;
+                padding: 4px 0 !important;
+                overflow-x: hidden;
+            }
+
+            /* The inline fixed 210px / 66px flex bases used by the
+               desktop layout are allowed to shrink and stack. */
+            .mwr-row {
+                width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                align-items: center;
+                gap: 4px;
+                margin-bottom: 6px;
+            }
+
+            .mwr-row > div {
+                flex: 1 1 100% !important;
+                width: 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box;
+            }
+
+            /* Button groups stay horizontal where possible. */
+            .mwr-row > div:first-child:has(img) {
+                flex: 0 0 auto !important;
+                width: auto !important;
+            }
+
+            .mwr-row img {
+                max-width: 64px;
+                height: auto;
+                vertical-align: middle;
+            }
+
+            /* ---------- radio page ---------- */
+            #tab-content1 #div-logo {
+                flex: 0 0 100% !important;
+                text-align: center;
+            }
+
+            #tab-content1 #label-logo {
+                margin: 4px auto !important;
+                width: min(128px, 32vw) !important;
+                height: auto !important;
+                aspect-ratio: 1;
+            }
+
+            #tab-content1 #div-tone-s {
+                width: 100% !important;
+                flex: 1 1 100% !important;
+            }
+
+            #tab-content1 #div-tone-s > div {
+                width: 100% !important;
+                height: auto !important;
+                display: grid !important;
+                grid-template-columns: 1fr 1fr;
+                gap: 4px 10px;
+            }
+
+            #tab-content1 .slidecontainer {
+                width: 100% !important;
+                float: none !important;
+            }
+
+            #tab-content1 select,
+            #tab-content1 input[type="text"],
+            #tab-content1 textarea {
+                max-width: 100% !important;
+            }
+
+            /* ---------- stations ---------- */
+            .stations-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .stations-table {
+                width: max-content;
+                min-width: 100%;
+            }
+
+            .stations-th {
+                font-size: 14px;
+                padding: 6px 5px;
+            }
+
+            /* ---------- search ---------- */
+            #tab-content5 > div[style*="width: 400px"],
+            #tab-content5 > div[style*="calc(100% - 480px)"] {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding-right: 0 !important;
+            }
+
+            /* ---------- settings / IR ---------- */
+            #tab-content6 table,
+            #tab-content8 table {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            #tab-content6 table > tbody > tr > td {
+                display: block !important;
+                width: 100% !important;
+                min-width: 0 !important;
+                border-right: none !important;
+                border-bottom: 1px solid #999;
+                padding: 8px !important;
+            }
+
+            #tab-content8 table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #tab-content8 table th,
+            #tab-content8 table td {
+                white-space: nowrap;
+            }
+
+            /* ---------- Bluetooth page ---------- */
+            #tab-content9 > div {
+                max-width: 100% !important;
+            }
+
+            #tab-content9 [style*="width: 640px"] {
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #tab-content9 table {
+                max-width: 100%;
+            }
+
+            #tab-content9 .boxstyle_200x36,
+            #tab-content9 .boxstyle_m,
+            #tab-content9 .boxstyle_l {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            #tab-content9 > div:last-of-type {
+                padding-left: 0 !important;
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            #tab-content9 > div:last-of-type img {
+                width: 56px !important;
+                max-width: 56px !important;
+            }
+
+            /* ---------- general controls ---------- */
+            .boxstyle,
+            .boxstyle_s,
+            .boxstyle_m,
+            .boxstyle_l,
+            .boxstyle_200x36,
+            select,
+            input[type="text"],
+            input[type="number"],
+            input[type="time"] {
+                max-width: 100%;
+            }
+
+            button {
+                min-height: 40px;
+                touch-action: manipulation;
+            }
+
+            input,
+            select,
+            textarea,
+            button {
+                font-size: 16px; /* prevents iOS automatic zoom */
+            }
+
+            .filetree-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: min(420px, 60vh) !important;
+            }
+
+            #terminal {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: min(480px, 55vh) !important;
+                overflow: auto;
+            }
+
+            hr {
+                margin: 8px 0;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .mwr-navbar > div:first-child {
+                grid-template-columns: repeat(4, minmax(52px, 1fr));
+            }
+
+            .mwr-navbar > div:first-child > img {
+                width: 46px !important;
+                height: 46px !important;
+            }
+
+            .mwr-mode-switch {
+                max-width: 104px;
+                font-size: 13px;
+            }
+
+            #tab-content1 #div-tone-s > div {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -513,13 +889,13 @@ function connect() {
     }
 
     if (reconnectAttempts >= maxReconnectAttempts) {
-        console.error("Maximale Wiederverbindungsversuche erreicht. Keine weiteren Versuche.");
-        toastr.error("Maximale Wiederverbindungsversuche erreicht. Bitte Seite neu laden.");
+        console.error("Maximum number of reconnection attempts reached. No further attempts will be made.");
+        toastr.error("The maximum number of reconnection attempts has been reached. Please refresh the page.");
         return;
     }
 
     console.log(`Connecting to WebSocket at ws://${window.location.hostname}:81/ (Attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})...`);
-    toastr.info("Versuche Verbindung zum MiniWebRadio herzustellen...", "", {timeOut: 0, extendedTimeOut: 0, closeButton: false, tapToDismiss: false}); // Info über Verbindungsversuch
+    toastr.info("Attempting to connect to MiniWebRadio...", "", {timeOut: 0, extendedTimeOut: 0, closeButton: false, tapToDismiss: false}); // Info über Verbindungsversuch
 
     reconnectTimeout = setTimeout(function () {
         socket = new WebSocket('ws://'+window.location.hostname+':81/');
@@ -547,6 +923,7 @@ function connect() {
             socket.send("get_networks");
             socket.send("change_state=" + "RADIO");
             socket.send("get_sleepMode");
+            socket.send('KCX_BT_getPower');   // sync the landing-page Bluetooth toggle
 
             loadStationsFromSD("/stations.json")
                 .then(() => {
@@ -737,7 +1114,7 @@ function connect() {
             case "IR_address":          if(state === 'IR' && IR_addr != val){
                                             IR_addr = val
                                             ir_command_A.value=val
-                                            socket.send("set_IRaddr=" + val)
+                                            socket.send("set:IRaddr=" + val)
                                         }
                                         break
             case "IR_command":          ir_command_C.value=val
@@ -746,11 +1123,13 @@ function connect() {
                                         else if(val == '1') radiobtn = document.getElementById("sleepMode1")
                                         radiobtn.checked = true;
                                         break;
-            case "changeState":         if (val == 'RADIO' && state != 'RADIO') showTab1();
-                                        if (val == 'PLAYER'&& state != 'PLAYER') showTab3();
-                                        if (val == 'DLNA'&& state != 'DLNA') showTab4();
-                                        if (val == 'BLUETOOTH'&& state != 'BT') showTab9();
-                                        if (val == 'IR_SETTINGS' && state != 'IR') showTab8();
+            case "changeState":         // Device state notification only; do not change the web tab.
+                                        if (val == 'RADIO') state = 'RADIO';
+                                        if (val == 'PLAYER') state = 'PLAYER';
+                                        if (val == 'DLNA') state = 'DLNA';
+                                        if (val == 'BLUETOOTH') state = 'BT';
+                                        if (val == 'IR_SETTINGS') state = 'IR';
+                                        updateModeSwitchButton();
                                         break;
             case "KCX_BT_connected":    console.log(msg, val)
                                         if(val == '-1') {showLogo('label-bt-logo', '/png/BT_off.png');}
@@ -759,8 +1138,10 @@ function connect() {
                                         if(val == '1' && bt_RxTx == 'RX') {showLogo('label-bt-logo', '/png/BT_RX.png');}
                                         break;
             case "KCX_BT_power":        if(val == '1'){ document.getElementById('BT_Power').src = 'SD/png/BT_Blue.png'
+                                                        document.getElementById('BT_Power_Home').src = 'SD/png/BT_Blue.png'
                                                         console.log("BT Power on")}
                                         if(val == '0'){ document.getElementById('BT_Power').src = 'SD/png/BT_Red.png'
+                                                        document.getElementById('BT_Power_Home').src = 'SD/png/BT_Red.png'
                                                         console.log("BT Power off")}
                                         break;
             case "KCX_BT_MEM":          show_BT_memItems(val)
@@ -834,8 +1215,86 @@ toastr.options = {
     "hideMethod": "fadeOut"
 }
 
+function updateModeSwitchButton () {
+    const btn = document.getElementById('modeSwitchHome');
+    if (!btn) return;
+
+    if (state === 'BT') {
+        btn.textContent = '→ RADIO';
+        btn.title = 'Switch to Radio mode';
+        btn.setAttribute('aria-label', 'Switch to Radio mode');
+    } else {
+        btn.textContent = '→ BT';
+        btn.title = 'Switch to Bluetooth mode';
+        btn.setAttribute('aria-label', 'Switch to Bluetooth mode');
+    }
+}
+
+function toggleRadioBluetooth () {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toastr.warning('Not connected to MiniWebRadio');
+        return;
+    }
+
+    if (state === 'BT') {
+        showTab1();
+        activateRadio();
+    } else {
+        showTab9();
+        activateBluetooth();
+    }
+}
+
+function activateRadio () {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toastr.warning('Not connected to MiniWebRadio');
+        return;
+    }
+    socket.send("change_state=RADIO");
+    socket.send("get_mute");
+}
+
+function activatePlayer () {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toastr.warning('Not connected to MiniWebRadio');
+        return;
+    }
+    socket.send("change_state=PLAYER");
+}
+
+function activateDLNA () {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toastr.warning('Not connected to MiniWebRadio');
+        return;
+    }
+    clearDLNAServerList(0);
+    socket.send("change_state=DLNA");
+    socket.send('DLNA_getServer');
+}
+
+function activateIR () {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toastr.warning('Not connected to MiniWebRadio');
+        return;
+    }
+    socket.send("change_state=IR_SETTINGS");
+}
+
+function activateBluetooth () {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toastr.warning('Not connected to MiniWebRadio');
+        return;
+    }
+    socket.send("change_state=BLUETOOTH");
+    socket.send('KCX_BT_connected');
+    socket.send('KCX_BT_scanned');
+    socket.send('KCX_BT_mem');
+    socket.send('KCX_BT_getPower');
+    socket.send('KCX_BT_getMode');
+}
+
 function showTab1 () {
-    state = 'RADIO'
+    updateModeSwitchButton()
     console.log('tab-content1 (Radio)')
     document.getElementById('tab-content1').style.display = 'block'
     document.getElementById('tab-content2').style.display = 'none'
@@ -853,12 +1312,9 @@ function showTab1 () {
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
-    socket.send("change_state=" + "RADIO")
-    socket.send("get_mute")
 }
 
 function showTab2 () {
-    state = 'STATIONS'
     console.log('tab-content2 (Stations)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'block'
@@ -879,7 +1335,6 @@ function showTab2 () {
 }
 
 function showTab3 () {
-    state = 'PLAYER'
     console.log('tab-content3 (Audio Player)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
@@ -897,11 +1352,9 @@ function showTab3 () {
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
-    socket.send("change_state=" + "PLAYER")
 }
 
 function showTab4 () {
-    state = 'DLNA'
     console.log('tab-content4 (DLNA)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
@@ -919,13 +1372,9 @@ function showTab4 () {
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
-    clearDLNAServerList(0)
-    socket.send('DLNA_getServer')
-    socket.send("change_state=" + "DLNA")
 }
 
 function showTab5 () {
-    state = 'SEARCH'
     console.log('tab-content5 (Search Stations)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
@@ -947,7 +1396,6 @@ function showTab5 () {
 }
 
 function showTab6 () {
-    state = 'SETTINGS'
     console.log('tab-content5 (Search Stations)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
@@ -975,7 +1423,6 @@ function showTab6 () {
 }
 
 function showTab7 () {
-    state = 'ABOUT'
     console.log('tab-content6 (About)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
@@ -996,7 +1443,6 @@ function showTab7 () {
 }
 
 function showTab8 () {  // Remote Control
-    state = 'IR'
     console.log('tab-content7 (Remote Control)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
@@ -1017,11 +1463,10 @@ function showTab8 () {  // Remote Control
     loadFileFromSD("/ir_buttons.json", "application/json")
         .then(data => {ir_buttons = data;});
     writeJSONToTable(ir_buttons)
-    socket.send("change_state=" + "IR_SETTINGS")
 }
 
 function showTab9 () {  // KCX BT Emitter
-    state = 'BT'
+    updateModeSwitchButton()
     console.log('tab-content8 (Remote Control)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
@@ -1039,12 +1484,6 @@ function showTab9 () {  // KCX BT Emitter
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
-    socket.send("change_state=" + "BLUETOOTH")
-    socket.send('KCX_BT_connected')  // is connected?
-    socket.send('KCX_BT_scanned')    // get scanned items
-    socket.send('KCX_BT_mem')        // get saved items
-    socket.send('KCX_BT_getPower')   // get power state
-    socket.send('KCX_BT_getMode')    // get mode (TX or RX)
 }
 
 
@@ -1702,16 +2141,61 @@ function selectserver (presctrl) { // preset, select a server, root, level0
     dlnaLevel = 1
     console.log('DLNA_getContent=' + presctrl.value)
 }
-function select_l (presctrl, level) { // preset, select DLNA level
-    var cmd = 'DLNA_getContent='
-    var selectedText = presctrl.options[presctrl.selectedIndex].innerText;
-    if (presctrl.value.startsWith("http")) { cmd = 'DLNA_playFile='; }
-    socket.send(cmd + presctrl.value + "&" + selectedText)
-    console.log(cmd + presctrl.value + "&" + selectedText)
-    var nextLevel = level + 1
-    if (nextLevel <= 8) clearDLNAServerList(nextLevel)
-    dlnaLevel = nextLevel
+function select_l1 (presctrl) { // preset, select root
+    var slectedText = presctrl.options[presctrl.selectedIndex].innerText;
+    socket.send('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    console.log('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    clearDLNAServerList(2)
+    dlnaLevel = 2
 }
+function select_l2 (presctrl) { // preset, select level 1
+    var slectedText = presctrl.options[presctrl.selectedIndex].innerText;
+    socket.send('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    console.log('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    clearDLNAServerList(3)
+    dlnaLevel = 3
+}
+function select_l3 (presctrl) { // preset, select level 2
+    var slectedText = presctrl.options[presctrl.selectedIndex].innerText;
+    socket.send('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    console.log('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    clearDLNAServerList(4)
+    dlnaLevel = 4
+ }
+ function select_l4 (presctrl) { // preset, select level 3
+    var slectedText = presctrl.options[presctrl.selectedIndex].innerText;
+    socket.send('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    console.log('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    clearDLNAServerList(5)
+    dlnaLevel = 5
+ }
+ function select_l5 (presctrl) { // preset, select level 4
+    var slectedText = presctrl.options[presctrl.selectedIndex].innerText;
+    socket.send('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    console.log('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    clearDLNAServerList(6)
+    dlnaLevel = 6
+ }
+function select_l6 (presctrl) { // preset, select level 5
+    var slectedText = presctrl.options[presctrl.selectedIndex].innerText;
+    socket.send('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    console.log('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    clearDLNAServerList(7)
+    dlnaLevel = 7
+ }
+function select_l7 (presctrl) { // preset, select level 6
+    var slectedText = presctrl.options[presctrl.selectedIndex].innerText;
+    socket.send('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    console.log('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    clearDLNAServerList(8)
+    dlnaLevel = 8
+ }
+function select_l8 (presctrl) { // preset, select level 7
+    var slectedText = presctrl.options[presctrl.selectedIndex].innerText;
+    socket.send('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    console.log('DLNA_getContent=' + presctrl.value + "&" + slectedText)
+    dlnaLevel = 9
+ }
 // ----------------------------------- TAB Search Stations ------------------------------------
 
 // global var
@@ -2388,6 +2872,18 @@ function addScannedAddr(i){
     socket.send('KCX_BT_addAddr=' + scannedAddr)
 }
 
+// -AC-2 raw AT command tester
+function sendKcxRawCmd(){
+    var cmd = document.getElementById('kcxRawCmd').value
+    if(cmd === ""){
+        alert("type an AT command first")
+        return
+    }
+    console.log("sending raw KCX command:", cmd)
+    socket.send('KCX_BT_sendRaw=' + cmd)
+}
+// -AC-2 end
+
 function show_BT_scannedItems(jsonstr){
     console.log('KCX_BT_SCANNED', jsonstr)
     var jsonData = JSON.parse(jsonstr)
@@ -2591,7 +3087,7 @@ function appendToTerminal(text) {
     <!-- ~~~~~~~~~~~~~~~~~~~~ hidden div end ~~~~~~~~~~~~~~~~~~~~~~-->
 
 <!--===============================================================================================================================================-->
-    <div style="height: 66px; display: flex; padding-right: 0;">
+    <div class="mwr-navbar" style="height: 66px; display: flex; padding-right: 0;">
         <div style="flex: 0 0 480px;">
             <img id="btn1" src="SD/png/Radio_Yellow.png" alt="radio" onclick="showTab1()">
             <img id="btn2" src="SD/png/Station_Green.png" alt="station" onclick="showTab2()">
@@ -2600,8 +3096,15 @@ function appendToTerminal(text) {
             <img id="btn5" src="SD/png/Search_Green.png" alt="search" onclick="showTab5()">
             <img id="btn6" src="SD/png/Settings_Green.png" alt="settings" onclick="showTab6()">
             <img id="btn7" src="SD/png/About_Green.png" alt="info" onclick="showTab7()">
+            <button id="modeSwitchHome" class="mwr-mode-switch"
+                    type="button" onclick="toggleRadioBluetooth()"
+                    title="Switch between Radio and Bluetooth mode"
+                    aria-label="Switch to Bluetooth mode">→ BT</button>
+            <img id="BT_Power_Home" src="SD/png/BT_Blue.png" alt="bluetooth power"
+                    title="Bluetooth on/off" style="margin-left: 10px;"
+                    onclick="socket.send('KCX_BT_power')">
         </div>
-        <div style="font-size: 50px; text-align: center; flex: 1; padding-left: 0;">
+        <div class="mwr-title" style="font-size: 50px; text-align: center; flex: 1; padding-left: 0;">
             MiniWebRadio
         </div>
     </div>
@@ -2610,7 +3113,10 @@ function appendToTerminal(text) {
 <!--=================================================================== R A D I O =================================================================-->
 <!--===============================================================================================================================================-->
     <div id="tab-content1">
-        <div style="height: 66px; display: flex;">
+        <div style="text-align: center; margin: 8px 0;">
+            <button class="button_120x30 buttonblue" onclick="activateRadio()">Activate Radio</button>
+        </div>
+        <div class="mwr-row" style="height: 66px; display: flex;">
             <div style="flex: 0 0 210px;">
                 <img src="SD/png/Button_Previous_Green.png" alt="previous"
                         onmousedown="this.src='SD/png/Button_Previous_Yellow.png'"
@@ -2631,7 +3137,7 @@ function appendToTerminal(text) {
                 </select>
             </div>
         </div>
-        <div style="display: flex;">
+        <div class="mwr-row" style="display: flex;">
             <div id="div-logo" style="flex: 0 0 210px;">
                 <img id="label-logo" src="SD/common/unknown.png" alt="img" onclick="socket.send('homepage')"    >
             </div>
@@ -2682,7 +3188,7 @@ function appendToTerminal(text) {
                 </div>
             </div>
         </div>
-        <div style="height: 66px; display: flex;">
+        <div class="mwr-row" style="height: 66px; display: flex;">
             <div style="flex: 0 0 210px;">
                 <img src="SD/png/Button_Volume_Down_Blue.png" alt="Vol_down"
                     onmousedown="this.src='SD/png/Button_Volume_Down_Yellow.png'"
@@ -2706,7 +3212,7 @@ function appendToTerminal(text) {
                                    placeholder=" Waiting....">
             </div>
         </div>
-        <div style="height: 66px; display: flex;">
+        <div class="mwr-row" style="height: 66px; display: flex;">
             <div style="flex:1;">
                 <input type="text" class="boxstyle" style="width: calc(100% - 8px); margin-top: 14px; padding-left:7px 0;" id="station"
                     placeholder=" Enter a streamURL here.... , for authentication streamURL|username|password">
@@ -2720,7 +3226,7 @@ function appendToTerminal(text) {
                     onclick="setstation()">
             </div>
         </div>
-        <div style="height: 66px; display: flex;">
+        <div class="mwr-row" style="height: 66px; display: flex;">
             <div style="flex:1;">
                 <input type="text" class="boxstyle" style="width: calc(100% - 8px); margin-top: 14px; padding-left:7px 0;" id="resultstr1"
                                    placeholder=" Test....">
@@ -2788,6 +3294,9 @@ function appendToTerminal(text) {
 <!--====================================================== P L A Y E R ============================================================================-->
 <!--===============================================================================================================================================-->
     <div id="tab-content3">
+        <div style="text-align: center; margin: 8px 0;">
+            <button class="button_120x30 buttonblue" onclick="activatePlayer()">Activate Player</button>
+        </div>
         <div class="container" id="filetreeContainer">
             <fieldset>
                 <legend> Files </legend>
@@ -2854,33 +3363,36 @@ function appendToTerminal(text) {
 <!--=======================================================  D L N A  =============================================================================-->
 <!--===============================================================================================================================================-->
     <div id="tab-content4">
+        <div style="text-align: center; margin: 8px 0;">
+            <button class="button_120x30 buttonblue" onclick="activateDLNA()">Activate DLNA</button>
+        </div>
         <center>
             <div style="flex: 0 0 calc(100% - 0px);">
                 <select class="boxstyle" style="width: 100%;" onchange="selectserver(this)" id="server">
                     <option value="-1">Select a DLNA Server here</option>
                 </select>
-                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l(this, 1)" id="level1">
+                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l1(this)" id="level1">
                     <option value="-1"> </option>
                 </select>
-                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l(this, 2)" id="level2">
+                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l2(this)" id="level2">
                     <option value="-1"> </option>
                 </select>
-                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l(this, 3)" id="level3">
+                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l3(this)" id="level3">
                     <option value="-1"> </option>
                 </select>
-                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l(this, 4)" id="level4">
+                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l4(this)" id="level4">
                     <option value="-1"> </option>
                 </select>
-                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l(this, 5)" id="level5">
+                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l5(this)" id="level5">
                     <option value="-1"> </option>
                 </select>
-                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l(this, 6)" id="level6">
+                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l6(this)" id="level6">
                     <option value="-1"> </option>
                 </select>
-                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l(this, 7)" id="level7">
+                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l7(this)" id="level7">
                     <option value="-1"> </option>
                 </select>
-                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l(this, 8)" id="level8">
+                <select class="boxstyle" style="width: 100%; margin-top: 5px;" onchange="select_l8(this)" id="level8">
                     <option value="-1"> </option>
                 </select>
             </div>
@@ -3138,9 +3650,19 @@ function appendToTerminal(text) {
             </table>
         </div>
         <div id="terminal" style="display: none;"></div>
+		<!-- -AC-2 raw AT command tester - sends whatever is typed straight to the KCX module,
+             watch the Show Terminal panel for the KCX TX/RX log lines -->
+		<div style="padding-top: 15px;">
+			<input type="text" id="kcxRawCmd" placeholder="e.g. AT+GMR?" style="width: 200px;"
+				onkeydown="if(event.key === 'Enter') sendKcxRawCmd()">
+			<button onclick="sendKcxRawCmd()">Send raw AT command</button>
+		</div>
     </div>
 <!--===============================================================================================================================================-->
     <div id="tab-content8">   <!-- IR Settings -->
+        <div style="text-align: center; margin: 8px 0;">
+            <button class="button_120x30 buttonblue" onclick="activateIR()">Activate IR</button>
+        </div>
         <div id="notification2" class="notification1"></div>
         <div>
         <table id="ir_table">
@@ -3331,6 +3853,9 @@ function appendToTerminal(text) {
     </div>
 <!--===============================================================================================================================================-->
     <div id="tab-content9"> <!-- KCX BT Emitter Settings -->
+        <div style="text-align: center; margin: 8px 0;">
+            <button class="button_120x30 buttonblue" onclick="activateBluetooth()">Activate Bluetooth</button>
+        </div>
         <div style="display:flex">
             <div id="div-BT-logo" style="flex: 0 0 150px;">
                 <img id="label-bt-logo" onclick="socket.send('KCX_BT_connected')">
@@ -3545,6 +4070,10 @@ function appendToTerminal(text) {
             </div>
         </div>
     </div>
+
+    
+
+        
 <!--===============================================================================================================================================-->
 
 </div>
