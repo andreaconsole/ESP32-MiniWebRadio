@@ -2732,9 +2732,19 @@ void my_audio_info(Audio::msg_t m) {
 
         case Audio::evt_genre: printfln(s_tag.audio_info, "genre: " ANSI_ESC_YELLOW "{}", m.msg); break;
 
+        //case Audio::evt_vu: {
+        //    if (s_state == RADIO && s_subState_radio == 0) { VUmeter_RA.update(m.vec1[0], m.vec1[1], m.vec1[2], m.vec1[3]); }
+        //} break;
+
+        // -AC- Vu meter visible also with other states
         case Audio::evt_vu: {
-            if (s_state == RADIO && s_subState_radio == 0) { VUmeter_RA.update(m.vec1[0], m.vec1[1], m.vec1[2], m.vec1[3]); }
+            if ((s_state == RADIO && s_subState_radio == 0)||
+                (s_state == PLAYER && s_subState_player == 1)||
+                (s_state == BLUETOOTH) { 
+                VUmeter_RA.update(m.vec1[0], m.vec1[1], m.vec1[2], m.vec1[3]); 
+            }
         } break;
+        // -AC- end change
 
         case Audio::evt_spectrum:
             if (s_state == RADIO && s_subState_radio == 0) {
