@@ -2,8 +2,14 @@
  *  index.h
  *
  *  Created on: 04.10.2018
- *  Updated on: 27.06.2026
- *      Author: Wolle; modified by Console
+ *  Updated on: 31.08.2026
+ *      Author: Wolle + ChatGPT
+ *	changes: : 
+ *       - mobile-friendly responsive layout added
+ *       -  only deliberate interactions with the hardware allowed 
+ *          (e.g., no automatic commands sent on tab change).
+ *       - a couple of comments in German translated.
+>>>>>>> origin/My-Personal-Instance
  *
  *  successfully tested with Chrome and Firefox
  *
@@ -884,13 +890,13 @@ function connect() {
     }
 
     if (reconnectAttempts >= maxReconnectAttempts) {
-        console.error("Maximale Wiederverbindungsversuche erreicht. Keine weiteren Versuche.");
-        toastr.error("Maximale Wiederverbindungsversuche erreicht. Bitte Seite neu laden.");
+        console.error("Maximum number of reconnection attempts reached. No further attempts will be made.");
+        toastr.error("The maximum number of reconnection attempts has been reached. Please refresh the page.");
         return;
     }
 
     console.log(`Connecting to WebSocket at ws://${window.location.hostname}:81/ (Attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})...`);
-    toastr.info("Versuche Verbindung zum MiniWebRadio herzustellen...", "", {timeOut: 0, extendedTimeOut: 0, closeButton: false, tapToDismiss: false}); // Info über Verbindungsversuch
+    toastr.info("Attempting to connect to MiniWebRadio...", "", {timeOut: 0, extendedTimeOut: 0, closeButton: false, tapToDismiss: false}); // Info über Verbindungsversuch
 
     reconnectTimeout = setTimeout(function () {
         socket = new WebSocket('ws://'+window.location.hostname+':81/');
@@ -1118,11 +1124,13 @@ function connect() {
                                         else if(val == '1') radiobtn = document.getElementById("sleepMode1")
                                         radiobtn.checked = true;
                                         break;
-            case "changeState":         if (val == 'RADIO' && state != 'RADIO') showTab1();
-                                        if (val == 'PLAYER'&& state != 'PLAYER') showTab3();
-                                        if (val == 'DLNA'&& state != 'DLNA') showTab4();
-                                        if (val == 'BLUETOOTH'&& state != 'BT') showTab9();
-                                        if (val == 'IR_SETTINGS' && state != 'IR') showTab8();
+            case "changeState":         // Device state notification only; do not change the web tab.
+                                        if (val == 'RADIO') state = 'RADIO';
+                                        if (val == 'PLAYER') state = 'PLAYER';
+                                        if (val == 'DLNA') state = 'DLNA';
+                                        if (val == 'BLUETOOTH') state = 'BT';
+                                        if (val == 'IR_SETTINGS') state = 'IR';
+                                        updateModeSwitchButton();
                                         break;
             case "KCX_BT_connected":    console.log(msg, val)
                                         if(val == '-1') {showLogo('label-bt-logo', '/png/BT_off.png');}
@@ -1231,13 +1239,62 @@ function toggleRadioBluetooth () {
 
     if (state === 'BT') {
         showTab1();
+        activateRadio();
     } else {
         showTab9();
+        activateBluetooth();
     }
 }
 
+function activateRadio () {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toastr.warning('Not connected to MiniWebRadio');
+        return;
+    }
+    socket.send("change_state=RADIO");
+    socket.send("get_mute");
+}
+
+function activatePlayer () {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toastr.warning('Not connected to MiniWebRadio');
+        return;
+    }
+    socket.send("change_state=PLAYER");
+}
+
+function activateDLNA () {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toastr.warning('Not connected to MiniWebRadio');
+        return;
+    }
+    clearDLNAServerList(0);
+    socket.send("change_state=DLNA");
+    socket.send('DLNA_getServer');
+}
+
+function activateIR () {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toastr.warning('Not connected to MiniWebRadio');
+        return;
+    }
+    socket.send("change_state=IR_SETTINGS");
+}
+
+function activateBluetooth () {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toastr.warning('Not connected to MiniWebRadio');
+        return;
+    }
+    socket.send("change_state=BLUETOOTH");
+    socket.send('KCX_BT_connected');
+    socket.send('KCX_BT_scanned');
+    socket.send('KCX_BT_mem');
+    socket.send('KCX_BT_getPower');
+    socket.send('KCX_BT_getMode');
+}
+
 function showTab1 () {
-    state = 'RADIO'
     updateModeSwitchButton()
     console.log('tab-content1 (Radio)')
     document.getElementById('tab-content1').style.display = 'block'
@@ -1256,12 +1313,9 @@ function showTab1 () {
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
-    socket.send("change_state=" + "RADIO")
-    socket.send("get_mute")
 }
 
 function showTab2 () {
-    state = 'STATIONS'
     console.log('tab-content2 (Stations)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'block'
@@ -1282,7 +1336,6 @@ function showTab2 () {
 }
 
 function showTab3 () {
-    state = 'PLAYER'
     console.log('tab-content3 (Audio Player)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
@@ -1300,11 +1353,9 @@ function showTab3 () {
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
-    socket.send("change_state=" + "PLAYER")
 }
 
 function showTab4 () {
-    state = 'DLNA'
     console.log('tab-content4 (DLNA)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
@@ -1322,13 +1373,9 @@ function showTab4 () {
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
-    clearDLNAServerList(0)
-    socket.send('DLNA_getServer')
-    socket.send("change_state=" + "DLNA")
 }
 
 function showTab5 () {
-    state = 'SEARCH'
     console.log('tab-content5 (Search Stations)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
@@ -1350,7 +1397,6 @@ function showTab5 () {
 }
 
 function showTab6 () {
-    state = 'SETTINGS'
     console.log('tab-content5 (Search Stations)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
@@ -1378,7 +1424,6 @@ function showTab6 () {
 }
 
 function showTab7 () {
-    state = 'ABOUT'
     console.log('tab-content6 (About)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
@@ -1399,7 +1444,6 @@ function showTab7 () {
 }
 
 function showTab8 () {  // Remote Control
-    state = 'IR'
     console.log('tab-content7 (Remote Control)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
@@ -1420,11 +1464,9 @@ function showTab8 () {  // Remote Control
     loadFileFromSD("/ir_buttons.json", "application/json")
         .then(data => {ir_buttons = data;});
     writeJSONToTable(ir_buttons)
-    socket.send("change_state=" + "IR_SETTINGS")
 }
 
 function showTab9 () {  // KCX BT Emitter
-    state = 'BT'
     updateModeSwitchButton()
     console.log('tab-content8 (Remote Control)')
     document.getElementById('tab-content1').style.display = 'none'
@@ -1443,12 +1485,6 @@ function showTab9 () {  // KCX BT Emitter
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
-    socket.send("change_state=" + "BLUETOOTH")
-    socket.send('KCX_BT_connected')  // is connected?
-    socket.send('KCX_BT_scanned')    // get scanned items
-    socket.send('KCX_BT_mem')        // get saved items
-    socket.send('KCX_BT_getPower')   // get power state
-    socket.send('KCX_BT_getMode')    // get mode (TX or RX)
 }
 
 
@@ -3078,6 +3114,9 @@ function appendToTerminal(text) {
 <!--=================================================================== R A D I O =================================================================-->
 <!--===============================================================================================================================================-->
     <div id="tab-content1">
+        <div style="text-align: center; margin: 8px 0;">
+            <button class="button_120x30 buttonblue" onclick="activateRadio()">Activate Radio</button>
+        </div>
         <div class="mwr-row" style="height: 66px; display: flex;">
             <div style="flex: 0 0 210px;">
                 <img src="SD/png/Button_Previous_Green.png" alt="previous"
@@ -3256,6 +3295,9 @@ function appendToTerminal(text) {
 <!--====================================================== P L A Y E R ============================================================================-->
 <!--===============================================================================================================================================-->
     <div id="tab-content3">
+        <div style="text-align: center; margin: 8px 0;">
+            <button class="button_120x30 buttonblue" onclick="activatePlayer()">Activate Player</button>
+        </div>
         <div class="container" id="filetreeContainer">
             <fieldset>
                 <legend> Files </legend>
@@ -3322,6 +3364,9 @@ function appendToTerminal(text) {
 <!--=======================================================  D L N A  =============================================================================-->
 <!--===============================================================================================================================================-->
     <div id="tab-content4">
+        <div style="text-align: center; margin: 8px 0;">
+            <button class="button_120x30 buttonblue" onclick="activateDLNA()">Activate DLNA</button>
+        </div>
         <center>
             <div style="flex: 0 0 calc(100% - 0px);">
                 <select class="boxstyle" style="width: 100%;" onchange="selectserver(this)" id="server">
@@ -3606,9 +3651,19 @@ function appendToTerminal(text) {
             </table>
         </div>
         <div id="terminal" style="display: none;"></div>
+		<!-- -AC-2 raw AT command tester - sends whatever is typed straight to the KCX module,
+             watch the Show Terminal panel for the KCX TX/RX log lines -->
+		<div style="padding-top: 15px;">
+			<input type="text" id="kcxRawCmd" placeholder="e.g. AT+GMR?" style="width: 200px;"
+				onkeydown="if(event.key === 'Enter') sendKcxRawCmd()">
+			<button onclick="sendKcxRawCmd()">Send raw AT command</button>
+		</div>
     </div>
 <!--===============================================================================================================================================-->
     <div id="tab-content8">   <!-- IR Settings -->
+        <div style="text-align: center; margin: 8px 0;">
+            <button class="button_120x30 buttonblue" onclick="activateIR()">Activate IR</button>
+        </div>
         <div id="notification2" class="notification1"></div>
         <div>
         <table id="ir_table">
@@ -3799,6 +3854,9 @@ function appendToTerminal(text) {
     </div>
 <!--===============================================================================================================================================-->
     <div id="tab-content9"> <!-- KCX BT Emitter Settings -->
+        <div style="text-align: center; margin: 8px 0;">
+            <button class="button_120x30 buttonblue" onclick="activateBluetooth()">Activate Bluetooth</button>
+        </div>
         <div style="display:flex">
             <div id="div-BT-logo" style="flex: 0 0 150px;">
                 <img id="label-bt-logo" onclick="socket.send('KCX_BT_connected')">
@@ -4014,13 +4072,7 @@ function appendToTerminal(text) {
         </div>
     </div>
 
-    <!-- -AC-2 raw AT command tester - sends whatever is typed straight to the KCX module,
-             watch the Show Terminal panel for the KCX TX/RX log lines -->
-    <div style="padding-top: 15px;">
-        <input type="text" id="kcxRawCmd" placeholder="e.g. AT+GMR?" style="width: 200px;"
-            onkeydown="if(event.key === 'Enter') sendKcxRawCmd()">
-        <button onclick="sendKcxRawCmd()">Send raw AT command</button>
-    </div>
+    
 
         
 <!--===============================================================================================================================================-->
