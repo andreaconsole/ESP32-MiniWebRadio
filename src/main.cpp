@@ -1791,11 +1791,6 @@ void changeState(int8_t state, int8_t subState) {
                 muteChanged(false);
             }
             
-            if (BT_EMITTER_CONNECT >= 0) { //-AC- shortly lower "connect" pin to reset BT connection
-                digitalWrite(BT_EMITTER_CONNECT, LOW); 
-                delay(200);
-                digitalWrite(BT_EMITTER_CONNECT, HIGH);  
-            }
             if (newState) {
                 txt_RA_staName.setText("");
                 txt_RA_staName.show();
@@ -1929,7 +1924,7 @@ void changeState(int8_t state, int8_t subState) {
             txt_DL_fName.show();
             showFileLogo(DLNA, subState);
             webSrv.send("changeState=", "DLNA");
-MWR_LOG_ERROR("audio.isRunning {}", audio.isRunning());
+            MWR_LOG_ERROR("audio.isRunning {}", audio.isRunning());
             if (audio.isRunning()) btn_DL_pause.set_active(true);
             else                   btn_DL_pause.set_active(false);
             sdr_DL_volume.show();
@@ -2023,17 +2018,22 @@ MWR_LOG_ERROR("audio.isRunning {}", audio.isRunning());
             
             //-AC- new code
             // Mute radio audio when switching to Bluetooth
+            // Bluetooth screen
+            pic_BT_mode.setPicturePath("/common/BT_RX.png");
+            pic_BT_mode.show();
+
+            txt_BT_mode.set_bg_color(TFT_BROWN);
+            txt_BT_mode.setText("BLUETOOTH");
+            txt_BT_mode.show();
+            
             if (newState && s_state == RADIO) {
                 muteChanged(true);
             }
 
             btn_BT_radio.show(); //to get back to radio mode
+            btn_BT_reconnect.show();
+
             if (AUDIO_SWITCH >= 0) digitalWrite(AUDIO_SWITCH, LOW);  // -AC- switch to BT
-            if (BT_EMITTER_CONNECT >= 0) { //-AC- shortly lower "connect" pin to reset BT connection
-                digitalWrite(BT_EMITTER_CONNECT, LOW); 
-                delay(200);
-                digitalWrite(BT_EMITTER_CONNECT, HIGH);  
-            }
             // -AC- end of changes
 
             if (s_state != BLUETOOTH) webSrv.send("changeState=", "BLUETOOTH");
@@ -2768,7 +2768,7 @@ void my_audio_info(Audio::msg_t m) {
         case Audio::evt_vu: {
             if ((s_state == RADIO && s_subState_radio == 0)||
                 (s_state == PLAYER && s_subState_player == 1)||
-                (s_state == BLUETOOTH) { 
+                (s_state == BLUETOOTH)) { 
                 VUmeter_RA.update(m.vec1[0], m.vec1[1], m.vec1[2], m.vec1[3]); 
             }
         } break;
@@ -3300,7 +3300,7 @@ void ir_short_key(int8_t key) {
                     if (s_ir_btn_select == 0) { btn_BT_volDown.click(); }
                     if (s_ir_btn_select == 1) { btn_BT_volUp.click(); }
                     if (s_ir_btn_select == 2) { btn_BT_pause.click(); }
-                    if (s_ir_btn_select == 3) { btn_BT_mode.click(); }
+                    if (s_ir_btn_select == 3) { btn_BT_reconnect.click(); } //-AC- new function instead of mode
                     if (s_ir_btn_select == 4) { btn_BT_radio.click(); }
                     if (s_ir_btn_select == 5) { btn_BT_power.click(); }
                     if(s_ir_btn_select == -1) { s_ir_btn_select = 0; set_ir_pos_BT(0); }
@@ -4003,7 +4003,7 @@ void tp_released(uint16_t x, uint16_t y){
             btn_EQ_Radio.released(); btn_EQ_Player.released(); btn_EQ_mute.released();
             break;
         case BLUETOOTH:
-            btn_BT_pause.released(); btn_BT_radio.released(); btn_BT_volDown.released(); btn_BT_volUp.released(); btn_BT_mode.released(); btn_BT_power.released();
+            btn_BT_pause.released(); btn_BT_radio.released(); btn_BT_volDown.released(); btn_BT_volUp.released(); btn_BT_reconnect.released(); btn_BT_power.released();
             break;
         case IR_SETTINGS:
             btn_IR_radio.released();
@@ -4184,9 +4184,15 @@ void graphicObjects_OnClick(ps_ptr<char> name, uint8_t val) { // val = 0 --> is 
         if (val && name.equals("btn_BT_radio"))   { goto exit; }
         if (val && name.equals("btn_BT_volDown")) { bt_emitter.downvolume(); goto exit; }
         if (val && name.equals("btn_BT_volUp"))   { bt_emitter.upvolume();   goto exit; }
-        if (val && name.equals("btn_BT_mode"))    { if(s_bt_emitter.mode.equals("RX")) s_bt_emitter.mode = "TX"; else s_bt_emitter.mode = "RX"; goto exit; }
         if (val && name.equals("btn_BT_power"))   { goto exit; }
-        if (val && name.equals("txt_BT_mode"))    { goto exit; }
+        if (val && name.equals("btn_BT_reconnect"))    { //-AC- new function instead of mode
+            if (BT_EMITTER_CONNECT >= 0) {
+                digitalWrite(BT_EMITTER_CONNECT, LOW);
+                delay(200);
+                digitalWrite(BT_EMITTER_CONNECT, HIGH);
+            }
+            goto exit;
+        }
     }
     if (s_state == IR_SETTINGS) {
         if (val && name.equals("btn_IR_radio"))   { goto exit; }
@@ -4370,7 +4376,7 @@ void graphicObjects_OnRelease(ps_ptr<char> name, releasedArg ra) {
         if (name.equals("btn_BT_volDown"))  { if(s_ir_btn_select == 0) set_ir_pos_BT(0); goto exit; }
         if (name.equals("btn_BT_volUp"))    { if(s_ir_btn_select == 1) set_ir_pos_BT(1); goto exit; }
         if (name.equals("btn_BT_pause"))    { if(s_ir_btn_select == 2) set_ir_pos_BT(2); goto exit; }
-        if (name.equals("btn_BT_mode"))     { if(s_ir_btn_select == 3) set_ir_pos_BT(3); goto exit; }
+        if (name.equals("btn_BT_reconnect")){ if(s_ir_btn_select == 3) set_ir_pos_BT(3); goto exit; }
         if (name.equals("btn_BT_radio"))    { changeState(RADIO, 0); goto exit; }
         if (name.equals("btn_BT_power"))    { if(s_ir_btn_select == 5 && s_bt_emitter.found) set_ir_pos_BT(5); s_bt_emitter.enabled = !s_bt_emitter.enabled; goto exit; }
     }

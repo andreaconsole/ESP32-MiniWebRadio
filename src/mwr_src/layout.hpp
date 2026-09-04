@@ -587,7 +587,7 @@ Button     btn_BT_power("btn_BT_power", ButtonType::ToggleButton);
 Button     btn_BT_volDown("btn_BT_volDown", ButtonType::PushButton);
 Button     btn_BT_volUp("btn_BT_volUp", ButtonType::PushButton);
 Button     btn_BT_radio("btn_BT_radio", ButtonType::PushButton);
-Button     btn_BT_mode("btn_BT_mode", ButtonType::PushButton);
+Button     btn_BT_reconnect("btn_BT_reconnect", ButtonType::PushButton);
 PictureBox pic_BT_mode("pic_BT_mode");
 Textbox    txt_BT_mode("txt_BT_mode");
 // IR_SETTINGS
@@ -827,8 +827,8 @@ void placingGraphicObjects() { // and initialize them
     btn_BT_volUp.setPicturePath("/btn/Button_Volume_Up");
     btn_BT_pause.begin(2 * layout.winButton.w, layout.winButton.y, layout.winButton.w, layout.winButton.h);
     btn_BT_pause.setPicturePath("/btn/Button_Pause");
-    btn_BT_mode.begin(3 * layout.winButton.w, layout.winButton.y, layout.winButton.w, layout.winButton.h);
-    btn_BT_mode.setPicturePath("/btn/Button_RxTx");
+    btn_BT_reconnect.begin(3 * layout.winButton.w, layout.winButton.y, layout.winButton.w, layout.winButton.h);
+    btn_BT_reconnect.setPicturePath("/btn/Button_RxTx");
     btn_BT_radio.begin(4 * layout.winButton.w, layout.winButton.y, layout.winButton.w, layout.winButton.h);
     btn_BT_radio.setPicturePath("/btn/Button_Radio");
     btn_BT_power.begin(5 * layout.winButton.w, layout.winButton.y, layout.winButton.w, layout.winButton.h);
@@ -1166,7 +1166,7 @@ next:
         case 0: res = btn_BT_volDown.set_focus(true); break;
         case 1: res = btn_BT_volUp.set_focus(true); break;
         case 2: res = btn_BT_pause.set_focus(true); break;
-        case 3: res = btn_BT_mode.set_focus(true); break;
+        case 3: res = btn_BT_reconnect.set_focus(true); break;
         case 4: res = btn_BT_radio.set_focus(true); break;
         case 5: res = btn_BT_power.set_focus(true); break;
     }
