@@ -5977,6 +5977,8 @@ class DisplayHeader : public RegisterTable {
             getTFT().fillRect(m_x, m_y, m_w, m_h, m_bg_color);
         }
         disable_all();
+        // -AC- Keep the clock visible when the header is hidden
+        timeStringObject->show();
     }
 
     void updateItem(ps_ptr<char> hl_item) { // radio, clock, audioplayer...
@@ -6032,7 +6034,7 @@ class DisplayHeader : public RegisterTable {
         }
     }
     void updateTime(ps_ptr<char> hl_time, bool complete = true) {
-        if (!m_enabled) return;
+        //if (!m_enabled) return; // -AC- Keep the clock visible when the header is hidden
         m_time = hl_time; // hhmmss
         timeStringObject->updateTime(m_time, false);
     }
@@ -6516,7 +6518,8 @@ class DisplayFooter : public RegisterTable {
         char buff[10];
         sprintf(buff, "%03d", m_staNr);
         txt_StaNr->setText(buff);
-        txt_StaNr->show();
+        if (m_enabled) txt_StaNr->show();// -AC- Keep it invisible when the footer is hidden
+        //txt_StaNr->show();
     }
     void updateFileNr(ps_ptr<char> fNr) { // or BT Volume
         if (txt_StaNr->is_enabled()) txt_StaNr->hide();
@@ -6532,9 +6535,9 @@ class DisplayFooter : public RegisterTable {
             pic_Flag->hide(); // Don't draw over it, the new flag could be smaller
             if (!SD_MMC.exists(scaleImage(flag).c_get())) flag = "/flags/unknown.jpg";
             pic_Flag->setPicturePath(flag);
-            pic_Flag->show();
+            if (m_enabled) pic_Flag->show(); // -AC- it was pic_Flag->show();
         } else {
-            pic_Flag->hide();
+            if (m_enabled) pic_Flag->hide(); // -AC- it was pic_Flag->hide();
         }
     }
     void updateOffTime(uint16_t offTime) {

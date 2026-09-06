@@ -9,7 +9,6 @@
  *       -  only deliberate interactions with the hardware allowed 
  *          (e.g., no automatic commands sent on tab change).
  *       - a couple of comments in German translated.
->>>>>>> origin/My-Personal-Instance
  *
  *  successfully tested with Chrome and Firefox
  *

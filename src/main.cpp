@@ -181,6 +181,7 @@ uint64_t s_totalRuntime = 0; // total runtime in seconds since start
 
 std::deque<ps_ptr<char>> s_PLS_content;
 std::deque<ps_ptr<char>> s_logBuffer;
+size_t s_logSentIndex = 0; // -AC- keep count of sent log lines
 
 ps_ptr<char> codecname[10] = {"unknown", "WAV", "MP3", "AAC", "M4A", "FLAC", "OPUS", "VORBIS", "OGG"};
 
@@ -300,6 +301,7 @@ boolean defaultsettings() {
 
     s_volume.cur_volume = parseJson("\"volume\":").to_uint8();
     s_volume.volumeSteps = parseJson("\"volumeSteps\":").to_uint8();
+    s_volume.cur_volume = s_volume.volumeSteps / 2; // -AC- always start at mid volume
     s_volume.ringVolume = parseJson("\"ringVolume\":").to_uint8();
     s_volume.volumeAfterAlarm = parseJson("\"volumeAfterAlarm\":").to_uint8();
     s_bt_emitter.volume = parseJson("\"BTvolume\":").to_uint8();
@@ -2131,15 +2133,35 @@ void loop() {
     getTFT().loop();
     BH1750.loop();
 
-    while (s_logBuffer.size() > 0) {
-        size_t i = s_logBuffer.size();
-        if (s_logBuffer[i - 1].strlen() > 0 && s_logBuffer[i - 1].strlen() < 1024) {
-            webSrv.send("serTerminal=", s_logBuffer[i - 1]);
-        } else
-            log_w("%s %i: strlen %i", __FILE__, __LINE__, s_logBuffer[i - 1].strlen());
-        s_logBuffer.pop_back();
-        if (s_logBuffer.size() == 0) s_logBuffer.clear(); // Löscht alle Elemente und gibt den Speicher frei
+    // -AC- store logs and send them to the web terminal when ready
+    // while (s_logBuffer.size() > 0) {
+    //     size_t i = s_logBuffer.size();
+    //     if (s_logBuffer[i - 1].strlen() > 0 && s_logBuffer[i - 1].strlen() < 1024) {
+    //         webSrv.send("serTerminal=", s_logBuffer[i - 1]);
+    //     } else
+    //         log_w("%s %i: strlen %i", __FILE__, __LINE__, s_logBuffer[i - 1].strlen());
+    //     s_logBuffer.pop_back();
+    //     if (s_logBuffer.size() == 0) s_logBuffer.clear(); // Löscht alle Elemente und gibt den Speicher frei
+    // }
+    while (s_logSentIndex < s_logBuffer.size()) {
+        size_t i = s_logSentIndex;
+        bool ok = true;
+
+        if (s_logBuffer[i].strlen() > 0 && s_logBuffer[i].strlen() < 1024) {
+            ok = webSrv.send("serTerminal=", s_logBuffer[i]);
+        } else {
+            log_w("%s %i: strlen %i", __FILE__, __LINE__, s_logBuffer[i].strlen());
+        }
+
+        if (!ok) break;   // no client yet — stop here, retry same index next loop()
+        s_logSentIndex++;
     }
+    // -AC- Keep only the last 500 messages
+    while (s_logBuffer.size() > 500) {
+        s_logBuffer.pop_front();
+        if (s_logSentIndex > 0) s_logSentIndex--;
+    }
+    // -AC- end change
 
     if (s_f_dlnaBrowseServer) {
         s_f_dlnaBrowseServer = false;
