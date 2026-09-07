@@ -1049,6 +1049,24 @@ void setup() {
     esp_log_set_vprintf(log_redirect_handler);
     if (!get_esp_items(&s_resetReason, &s_f_FFatFound)) return;
 
+    // -AC- find the reason for a reset
+    const char* rr = "unknown";
+    switch (s_resetReason) {
+        case ESP_RST_POWERON:   rr = "power-on"; break;
+        case ESP_RST_EXT:       rr = "external pin"; break;
+        case ESP_RST_SW:        rr = "software (ESP.restart)"; break;
+        case ESP_RST_PANIC:     rr = "PANIC / exception"; break;
+        case ESP_RST_INT_WDT:   rr = "interrupt watchdog"; break;
+        case ESP_RST_TASK_WDT:  rr = "task watchdog"; break;
+        case ESP_RST_WDT:       rr = "other watchdog"; break;
+        case ESP_RST_DEEPSLEEP: rr = "deep sleep wake"; break;
+        case ESP_RST_BROWNOUT:  rr = "BROWNOUT"; break;
+        case ESP_RST_SDIO:      rr = "SDIO (boot button)"; break;
+        default: break;
+    }
+    printfln(s_tag.setup, "last reset reason: " ANSI_ESC_CYAN "{}" ANSI_ESC_RESET " ({})", rr, (int)s_resetReason);
+    // -AC- end change
+
     if (TFT_BL >= 0) {
         s_f_brightnessIsChangeable = true;
         setupBacklight(TFT_BL, 512);
@@ -2143,22 +2161,24 @@ void loop() {
     //     s_logBuffer.pop_back();
     //     if (s_logBuffer.size() == 0) s_logBuffer.clear(); // Löscht alle Elemente und gibt den Speicher frei
     // }
+    // s_logBuffer: index 0 = newest (printfln prepends), highest index = oldest
     while (s_logSentIndex < s_logBuffer.size()) {
-        size_t i = s_logSentIndex;
+        size_t idx = s_logBuffer.size() - 1 - s_logSentIndex; // oldest not-yet-sent message
         bool ok = true;
 
-        if (s_logBuffer[i].strlen() > 0 && s_logBuffer[i].strlen() < 1024) {
-            ok = webSrv.send("serTerminal=", s_logBuffer[i]);
+        if (s_logBuffer[idx].strlen() > 0 && s_logBuffer[idx].strlen() < 1024) {
+            ok = webSrv.send("serTerminal=", s_logBuffer[idx]);
         } else {
-            log_w("%s %i: strlen %i", __FILE__, __LINE__, s_logBuffer[i].strlen());
+            log_w("%s %i: strlen %i", __FILE__, __LINE__, s_logBuffer[idx].strlen());
         }
 
-        if (!ok) break;   // no client yet — stop here, retry same index next loop()
+        if (!ok) break;
         s_logSentIndex++;
     }
-    // -AC- Keep only the last 500 messages
+
+    // Keep only the last 500 messages — oldest are at the back
     while (s_logBuffer.size() > 500) {
-        s_logBuffer.pop_front();
+        s_logBuffer.pop_back();               // remove the oldest
         if (s_logSentIndex > 0) s_logSentIndex--;
     }
     // -AC- end change
@@ -2833,7 +2853,13 @@ void my_audio_info(Audio::msg_t m) {
 // ————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void on_BH1750(int32_t ambVal) { //--AMBIENT LIGHT SENSOR BH1750--
     int16_t bh1750Value = 0;
+    ambVal = 2*ambVal+200; //-AC- raise measured brightness
     s_bh1750Value = map_l(ambVal, 0, 1600, displayConfig.brightnessMin, displayConfig.brightnessMax);
+    
+    // -AC- To avoid that brigthtness requested goes above max
+    if (s_bh1750Value > displayConfig.brightnessMax) {
+        s_bh1750Value = displayConfig.brightnessMax;
+    }
     MWR_LOG_DEBUG("ambVal {}, bh1750Value {}, s_brightness {}", ambVal, bh1750Value, s_brightness);
     setTFTbrightness(s_brightness, s_bh1750Value);
 }
