@@ -740,6 +740,7 @@ bool connectToWiFi() {
     line += PW;
     pref.putString("wifiStr0", line.c_get());
     WiFi.mode(WIFI_STA);
+    WiFi.setSleep(false); //-AC- prevent WiFi sleep-related problems
 
     for (int i = 0; i < 6; i++) {
         line.clear(); // Move this line outside the switch statement
@@ -827,111 +828,227 @@ bool connectToWiFi() {
 }
 // ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void setWiFiCredentials(ps_ptr<char> ssid, ps_ptr<char> password) {
-    if (ssid.strlen() < 5) return; // min length
+    // -AC- code revised by Claude
+    if (ssid.strlen() < 5) return;
 
-    MWR_LOG_ERROR("ssid {} pw {}", ssid, password);
+    // Log without exposing the password in cleartext.
+    MWR_LOG_ERROR("ssid {} pw {}", ssid, password.strlen() > 0 ? "****" : "");
 
-    ps_ptr<char> line = "";
-    ps_ptr<char> credentials;
-    int          i = 0, state = 0;
+    // Small helper: only write to NVS if the value actually changed,
+    // to avoid unnecessary flash wear on every save.
+    auto putIfChanged = [&](const char* key, const char* newValue) {
+        ps_ptr<char> current = pref.getString(key).c_str();
+        if (strcmp(current.get(), newValue) != 0) {
+            pref.putString(key, newValue);
+        }
+    };
 
-    for (i = 0; i < 6; i++) {
+    // ------------------------------------------------------------
+    // Look for existing occurrences of this SSID.
+    //
+    // Slot 0 is hard-coded and can never be modified.
+    // For slots 1..5:
+    //   - first occurrence  -> update it (or delete it)
+    //   - further occurrences -> remove them
+    // ------------------------------------------------------------
+
+    int firstMatch = -1;
+
+    for (int i = 1; i < 6; i++) {
+
+        ps_ptr<char> line;
+
         switch (i) {
-            case 0: line = pref.getString("wifiStr0").c_str(); break;
             case 1: line = pref.getString("wifiStr1").c_str(); break;
             case 2: line = pref.getString("wifiStr2").c_str(); break;
             case 3: line = pref.getString("wifiStr3").c_str(); break;
             case 4: line = pref.getString("wifiStr4").c_str(); break;
             case 5: line = pref.getString("wifiStr5").c_str(); break;
         }
-        if (line.starts_with(ssid) && line[ssid.strlen()] == '\t') { // ssid found
-            if (password.strlen() == 0) {
-                credentials = "\t"; // delete ssid and password
-            } else {                // update password
-                credentials = ssid;
-                credentials += "\t";
-                credentials += password;
-            }
-            if (i == 0) {
-                MWR_LOG_ERROR("password can't changed, is hard coded");
-                state = 0;
-                goto exit;
-            }
-            if (i == 1) {
-                pref.putString("wifiStr1", credentials.get());
-                state = 1;
-                goto exit;
-            }
-            if (i == 2) {
-                pref.putString("wifiStr2", credentials.get());
-                state = 1;
-                goto exit;
-            }
-            if (i == 3) {
-                pref.putString("wifiStr3", credentials.get());
-                state = 1;
-                goto exit;
-            }
-            if (i == 4) {
-                pref.putString("wifiStr4", credentials.get());
-                state = 1;
-                goto exit;
-            }
-            if (i == 5) {
-                pref.putString("wifiStr5", credentials.get());
-                state = 1;
-                goto exit;
+
+        if (line.strlen() < 1) continue;
+
+        int pos = line.index_of("\t", 0);
+        if (pos < 0) continue;
+
+        line[pos] = '\0';
+
+        char* storedSSID = line.get();
+
+        if (strcmp(storedSSID, ssid.get()) != 0) continue;
+
+        // --------------------------------------------------------
+        // We found an occurrence of the requested SSID.
+        // Keep the first one; remove all subsequent duplicates.
+        // --------------------------------------------------------
+
+        if (firstMatch < 0) {
+            firstMatch = i;
+        }
+        else {
+            // Duplicate: remove it (only writes if not already empty).
+            switch (i) {
+                case 1: putIfChanged("wifiStr1", ""); break;
+                case 2: putIfChanged("wifiStr2", ""); break;
+                case 3: putIfChanged("wifiStr3", ""); break;
+                case 4: putIfChanged("wifiStr4", ""); break;
+                case 5: putIfChanged("wifiStr5", ""); break;
             }
         }
     }
-    for (i = 1; i < 6; i++) {
-        line.clear();
-        switch (i) {
-            case 1: line = pref.getString("wifiStr1").c_str(); break;
-            case 2: line = pref.getString("wifiStr2").c_str(); break;
-            case 3: line = pref.getString("wifiStr3").c_str(); break;
-            case 4: line = pref.getString("wifiStr4").c_str(); break;
-            case 5: line = pref.getString("wifiStr5").c_str(); break;
+
+    // ------------------------------------------------------------
+    // If we found an existing credential:
+    //   password != "" -> update it
+    //   password == "" -> delete it
+    // ------------------------------------------------------------
+
+    if (firstMatch >= 0) {
+
+        if (password.strlen() == 0) {
+
+            // Delete the first occurrence as well.
+            switch (firstMatch) {
+                case 1: putIfChanged("wifiStr1", ""); break;
+                case 2: putIfChanged("wifiStr2", ""); break;
+                case 3: putIfChanged("wifiStr3", ""); break;
+                case 4: putIfChanged("wifiStr4", ""); break;
+                case 5: putIfChanged("wifiStr5", ""); break;
+            }
+
+            printfln(
+                s_tag.wifi_info,
+                ANSI_ESC_GREEN "The SSID: {} has been deleted",
+                ssid
+            );
+
         }
-        if (line.strlen() < 5) { // line is empty
-            credentials = ssid;
+        else {
+
+            // Update the first occurrence.
+            ps_ptr<char> credentials = ssid;
             credentials += "\t";
             credentials += password;
-            if (i == 1) {
-                pref.putString("wifiStr1", credentials.get());
-                state = 2;
-                goto exit;
+
+            switch (firstMatch) {
+                case 1: putIfChanged("wifiStr1", credentials.get()); break;
+                case 2: putIfChanged("wifiStr2", credentials.get()); break;
+                case 3: putIfChanged("wifiStr3", credentials.get()); break;
+                case 4: putIfChanged("wifiStr4", credentials.get()); break;
+                case 5: putIfChanged("wifiStr5", credentials.get()); break;
             }
-            if (i == 2) {
-                pref.putString("wifiStr2", credentials.get());
-                state = 2;
-                goto exit;
+
+            printfln(
+                s_tag.wifi_info,
+                ANSI_ESC_GREEN
+                "The password for the SSID: {} has been changed",
+                ssid
+            );
+        }
+
+        // --------------------------------------------------------
+        // Compact slots 1..5 so that empty slots are at the end.
+        // --------------------------------------------------------
+
+        ps_ptr<char> entries[5];
+        int count = 0;
+
+        for (int i = 1; i < 6; i++) {
+
+            ps_ptr<char> value;
+
+            switch (i) {
+                case 1: value = pref.getString("wifiStr1").c_str(); break;
+                case 2: value = pref.getString("wifiStr2").c_str(); break;
+                case 3: value = pref.getString("wifiStr3").c_str(); break;
+                case 4: value = pref.getString("wifiStr4").c_str(); break;
+                case 5: value = pref.getString("wifiStr5").c_str(); break;
             }
-            if (i == 3) {
-                pref.putString("wifiStr3", credentials.get());
-                state = 2;
-                goto exit;
-            }
-            if (i == 4) {
-                pref.putString("wifiStr4", credentials.get());
-                state = 2;
-                goto exit;
-            }
-            if (i == 5) {
-                pref.putString("wifiStr5", credentials.get());
-                state = 2;
-                goto exit;
+
+            if (value.strlen() > 0) {
+                entries[count] = std::move(value);
+                count++;
             }
         }
-    }
-    state = 3;
 
-exit:
-    if (state == 0) { printfln(s_tag.wifi_info, ANSI_ESC_RED "SSID: {} password can't changed, it is hard coded", ssid); }
-    if (state == 1) { printfln(s_tag.wifi_info, ANSI_ESC_GREEN "The passord \"{}\" for the SSID: {} has been changed", password, ssid); }
-    if (state == 2) { printfln(s_tag.wifi_info, ANSI_ESC_GREEN "The SSID: {} has been added", ssid); }
-    if (state == 3) { printfln(s_tag.wifi_info, ANSI_ESC_RED "No more memory to save the credentials for: {}", ssid); }
-    return;
+        for (int i = 0; i < 5; i++) {
+
+            const char* value = (i < count) ? entries[i].get() : "";
+
+            switch (i + 1) {
+                case 1: putIfChanged("wifiStr1", value); break;
+                case 2: putIfChanged("wifiStr2", value); break;
+                case 3: putIfChanged("wifiStr3", value); break;
+                case 4: putIfChanged("wifiStr4", value); break;
+                case 5: putIfChanged("wifiStr5", value); break;
+            }
+        }
+
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // No existing occurrence.
+    //
+    // Empty password means "delete", so there is nothing to add.
+    // ------------------------------------------------------------
+
+    if (password.strlen() == 0) {
+
+        printfln(
+            s_tag.wifi_info,
+            ANSI_ESC_YELLOW "The SSID: {} was not found",
+            ssid
+        );
+
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // New credential: find the first empty slot.
+    // ------------------------------------------------------------
+
+    ps_ptr<char> credentials = ssid;
+    credentials += "\t";
+    credentials += password;
+
+    for (int i = 1; i < 6; i++) {
+
+        ps_ptr<char> line;
+
+        switch (i) {
+            case 1: line = pref.getString("wifiStr1").c_str(); break;
+            case 2: line = pref.getString("wifiStr2").c_str(); break;
+            case 3: line = pref.getString("wifiStr3").c_str(); break;
+            case 4: line = pref.getString("wifiStr4").c_str(); break;
+            case 5: line = pref.getString("wifiStr5").c_str(); break;
+        }
+
+        if (line.strlen() > 0) continue;
+
+        switch (i) {
+            case 1: putIfChanged("wifiStr1", credentials.get()); break;
+            case 2: putIfChanged("wifiStr2", credentials.get()); break;
+            case 3: putIfChanged("wifiStr3", credentials.get()); break;
+            case 4: putIfChanged("wifiStr4", credentials.get()); break;
+            case 5: putIfChanged("wifiStr5", credentials.get()); break;
+        }
+
+        printfln(
+            s_tag.wifi_info,
+            ANSI_ESC_GREEN "The SSID: {} has been added",
+            ssid
+        );
+
+        return;
+    }
+
+    printfln(
+        s_tag.wifi_info,
+        ANSI_ESC_RED
+        "No more memory to save the credentials for: {}",
+        ssid
+    );
 }
 
 /*****************************************************************************************************************************************************
