@@ -2,8 +2,8 @@
  *  index.h
  *
  *  Created on: 04.10.2018
- *  Updated on: 31.08.2026
- *      Author: Wolle + ChatGPT
+ *  Updated on: 09.09.2026
+ *      Author: Wolle + andreaconsole
  *	changes: : 
  *       - mobile-friendly responsive layout added
  *       -  only deliberate interactions with the hardware allowed 
@@ -28,7 +28,7 @@ const char index_html[] PROGMEM = R"=====(
 <head>
     <title>MiniWebRadio</title>
     <meta name="generator" content="Bluefish 2.2.10" >
-    <meta name="author" content="Wolle" >
+    <meta name="author" content="Wolle/andreaconsole" >
     <meta name="date" content="2019-10-11T20:07:54+0200" >
     <meta name="copyright" content="schreibfaul1">
     <meta name="keywords" content="">
@@ -3631,8 +3631,8 @@ function appendToTerminal(text) {
     <div id="tab-content7">  <!-- Info / About -->
         <p> MiniWebRadio -- Webradio receiver for ESP32, 2.8" or 3.5" color display and  external DAC.
          This project is documented on
-            <a target="blank" href="https://github.com/schreibfaul1/ESP32-MiniWebRadio">Github</a>.
-            Author: Wolle (schreibfaul1)
+            <a target="blank" href="https://github.com/andreaconsole/ESP32-MiniWebRadio">Github</a>.
+            Author: Wolle(schreibfaul1) / andreaconsole
         </p>
         <div id="controls">
           <label>
