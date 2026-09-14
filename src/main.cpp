@@ -9,7 +9,7 @@
     MiniWebRadio -- Webradio receiver for ESP32-S3
 
     first release on 03/2017                                                                                                      */char Version[] ="\
-    V 1.0.0 - 09 Sept 2026 (Forked from 4.2.0t2)                                                                                                     ";
+    V 1.0.1 - 13 Sept 2026 (Forked from 4.2.0t2)                                                                                                     ";
 
 /*  display (320x240px) with controller ILI9341 or
     display (480x320px) with controller ILI9486, ILI9488 or ST7796 (SPI) or
@@ -1193,6 +1193,16 @@ void setup() {
         pinMode(IR_PIN, INPUT_PULLUP); // if ir_pin is read only, have a external resistor (~10...40KOhm)
     }
 
+    //if (BT_EMITTER_RX >= 0) bt_emitter.begin(); -AC- I'll make no use of the BT library
+    if (AUDIO_SWITCH >= 0) { // -AC- Start as radio by setting the AUDIO_SWITCH
+        pinMode(AUDIO_SWITCH, OUTPUT);
+        digitalWrite(AUDIO_SWITCH, HIGH);  
+    }
+    if (BT_EMITTER_CONNECT >= 0) { // -AC- Set BT_EMITTER_CONNECT to high
+        pinMode(BT_EMITTER_CONNECT, OUTPUT);
+        digitalWrite(BT_EMITTER_CONNECT, HIGH);
+    }
+
     pref.begin("Pref", false); // instance of preferences from AccessPoint (SSID, PW ...)
 
     if (!detect_i2_c_devices(&i2cBusOne, I2C_SDA, I2C_SCL, &s_i2c_items)) { printfln(s_tag.setup, "No i2c device found"); }
@@ -1310,16 +1320,6 @@ void setup() {
         setTFTbrightness(200, 200);
         changeState(WIFI_SETTINGS, 0);
         return;
-    }
-
-    //if (BT_EMITTER_RX >= 0) bt_emitter.begin(); -AC- I'll make no use of the BT library
-    if (AUDIO_SWITCH >= 0) { // -AC- Start as radio by setting the AUDIO_SWITCH
-        pinMode(AUDIO_SWITCH, OUTPUT);
-        digitalWrite(AUDIO_SWITCH, HIGH);  
-    }
-    if (BT_EMITTER_CONNECT >= 0) { // -AC- Set BT_EMITTER_CONNECT to high
-        pinMode(BT_EMITTER_CONNECT, OUTPUT);
-        digitalWrite(BT_EMITTER_CONNECT, HIGH);
     }
 
     rec_buffer.alloc_array(REC_BUFFER_SIZE, "rec_buffer");                             // allocate in PSRAM
