@@ -722,7 +722,7 @@ void processPlaylist() {
 
 bool connectToWiFi() {
 
-    MWR_LOG_DEBUG("Connecting to WiFi...");
+    MWR_LOG_DEBUG("-> Connecting to WiFi...");
     ps_ptr<char> line(512);
 
     // create nvs entries if they do not exist
