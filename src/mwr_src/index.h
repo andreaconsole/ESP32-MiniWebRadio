@@ -90,7 +90,7 @@ const char index_html[] PROGMEM = R"=====(
             display : block;
             padding : 5px 0;
             max-width: 100%;
-            height: 440px;
+            height: 550px;
         }
         #tab-content2 {
             display : none;
@@ -3118,6 +3118,24 @@ function appendToTerminal(text) {
         </div>
         <div class="mwr-row" style="height: 66px; display: flex;">
             <div style="flex: 0 0 210px;">
+                <img src="SD/png/Button_Volume_Down_Blue.png" alt="Vol_down"
+                    onmousedown="this.src='SD/png/Button_Volume_Down_Yellow.png'"
+                    ontouchstart="this.src='SD/png/Button_Volume_Down_Yellow.png'"
+                    onmouseup="this.src='SD/png/Button_Volume_Down_Blue.png'"
+                    ontouchend="this.src='SD/png/Button_Volume_Down_Blue.png'"
+                    onclick="socket.send('downvolume')">
+                <img src="SD/png/Button_Volume_Up_Blue.png" alt="Vol_up"
+                    onmousedown="this.src='SD/png/Button_Volume_Up_Yellow.png'"
+                    ontouchstart="this.src='SD/png/Button_Volume_Up_Yellow.png'"
+                    onmouseup="this.src='SD/png/Button_Volume_Up_Blue.png'"
+                    ontouchend="this.src='SD/png/Button_Volume_Up_Blue.png'"
+                    onclick="socket.send('upvolume')">
+                <img id="Mute" src="SD/png/Button_Mute_Green.png" alt="Mute"
+                    onmousedown="this.src='SD/png/Button_Mute_Yellow.png'"
+                    ontouchstart="this.src='SD/png/Button_Mute_Yellow.png'"
+                    onclick="socket.send('set_mute')">
+            </div>
+            <div style="flex: 0 0 210px;">
                 <img src="SD/png/Button_Previous_Green.png" alt="previous"
                         onmousedown="this.src='SD/png/Button_Previous_Yellow.png'"
                         ontouchstart="this.src='SD/png/Button_Previous_Yellow.png'"
@@ -3189,24 +3207,6 @@ function appendToTerminal(text) {
             </div>
         </div>
         <div class="mwr-row" style="height: 66px; display: flex;">
-            <div style="flex: 0 0 210px;">
-                <img src="SD/png/Button_Volume_Down_Blue.png" alt="Vol_down"
-                    onmousedown="this.src='SD/png/Button_Volume_Down_Yellow.png'"
-                    ontouchstart="this.src='SD/png/Button_Volume_Down_Yellow.png'"
-                    onmouseup="this.src='SD/png/Button_Volume_Down_Blue.png'"
-                    ontouchend="this.src='SD/png/Button_Volume_Down_Blue.png'"
-                    onclick="socket.send('downvolume')">
-                <img src="SD/png/Button_Volume_Up_Blue.png" alt="Vol_up"
-                    onmousedown="this.src='SD/png/Button_Volume_Up_Yellow.png'"
-                    ontouchstart="this.src='SD/png/Button_Volume_Up_Yellow.png'"
-                    onmouseup="this.src='SD/png/Button_Volume_Up_Blue.png'"
-                    ontouchend="this.src='SD/png/Button_Volume_Up_Blue.png'"
-                    onclick="socket.send('upvolume')">
-                <img id="Mute" src="SD/png/Button_Mute_Green.png" alt="Mute"
-                    onmousedown="this.src='SD/png/Button_Mute_Yellow.png'"
-                    ontouchstart="this.src='SD/png/Button_Mute_Yellow.png'"
-                    onclick="socket.send('set_mute')">
-            </div>
             <div style="flex:1;">
                 <input type="text" class="boxstyle" style="width: calc(100% - 8px); margin-top: 14px; padding-left:7px 0;" id="cmd"
                                    placeholder=" Waiting....">
@@ -3296,6 +3296,24 @@ function appendToTerminal(text) {
     <div id="tab-content3">
         <div style="text-align: center; margin: 8px 0;">
             <button class="button_120x30 buttonblue" onclick="activatePlayer()">Activate Player</button>
+            <div style="height: 66px; display: flex;">
+                <img src="SD/png/Button_Volume_Down_Blue.png" alt="Vol_down"
+                    onmousedown="this.src='SD/png/Button_Volume_Down_Yellow.png'"
+                    ontouchstart="this.src='SD/png/Button_Volume_Down_Yellow.png'"
+                    onmouseup="this.src='SD/png/Button_Volume_Down_Blue.png'"
+                    ontouchend="this.src='SD/png/Button_Volume_Down_Blue.png'"
+                    onclick="socket.send('downvolume')">
+                <img src="SD/png/Button_Volume_Up_Blue.png" alt="Vol_up"
+                    onmousedown="this.src='SD/png/Button_Volume_Up_Yellow.png'"
+                    ontouchstart="this.src='SD/png/Button_Volume_Up_Yellow.png'"
+                    onmouseup="this.src='SD/png/Button_Volume_Up_Blue.png'"
+                    ontouchend="this.src='SD/png/Button_Volume_Up_Blue.png'"
+                    onclick="socket.send('upvolume')">
+                <img id="Mute" src="SD/png/Button_Mute_Green.png" alt="Mute"
+                    onmousedown="this.src='SD/png/Button_Mute_Yellow.png'"
+                    ontouchstart="this.src='SD/png/Button_Mute_Yellow.png'"
+                    onclick="socket.send('set_mute')">
+            </div>
         </div>
         <div class="container" id="filetreeContainer">
             <fieldset>
@@ -3304,25 +3322,6 @@ function appendToTerminal(text) {
                     <div id="filebrowser">
                         <div id="audioFileTree"></div>
                     </div>
-                </div>
-                <hr>
-                <div style="height: 66px; display: flex;">
-                    <img src="SD/png/Button_Volume_Down_Blue.png" alt="Vol_down"
-                        onmousedown="this.src='SD/png/Button_Volume_Down_Yellow.png'"
-                        ontouchstart="this.src='SD/png/Button_Volume_Down_Yellow.png'"
-                        onmouseup="this.src='SD/png/Button_Volume_Down_Blue.png'"
-                        ontouchend="this.src='SD/png/Button_Volume_Down_Blue.png'"
-                        onclick="socket.send('downvolume')">
-                    <img src="SD/png/Button_Volume_Up_Blue.png" alt="Vol_up"
-                        onmousedown="this.src='SD/png/Button_Volume_Up_Yellow.png'"
-                        ontouchstart="this.src='SD/png/Button_Volume_Up_Yellow.png'"
-                        onmouseup="this.src='SD/png/Button_Volume_Up_Blue.png'"
-                        ontouchend="this.src='SD/png/Button_Volume_Up_Blue.png'"
-                        onclick="socket.send('upvolume')">
-                    <img id="Mute" src="SD/png/Button_Mute_Green.png" alt="Mute"
-                        onmousedown="this.src='SD/png/Button_Mute_Yellow.png'"
-                        ontouchstart="this.src='SD/png/Button_Mute_Yellow.png'"
-                        onclick="socket.send('set_mute')">
                 </div>
                 <hr>
                 <div style="height: 66px; display: flex;">
