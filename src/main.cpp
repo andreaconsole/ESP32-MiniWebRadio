@@ -741,6 +741,7 @@ bool connectToWiFi() {
     pref.putString("wifiStr0", line.c_get());
     WiFi.mode(WIFI_STA);
     WiFi.setSleep(false); //-AC- prevent WiFi sleep-related problems
+    WiFi.setTxPower(WIFI_POWER_19_5dBm);  // -AC- Maximize output transmit power
 
     for (int i = 0; i < 6; i++) {
         line.clear(); // Move this line outside the switch statement
@@ -1151,9 +1152,9 @@ void setup() {
     vTaskDelay(1500); // wait for Serial to be ready
     printf("\n\n");
     printfln(s_tag.none, "");
-    printfln(s_tag.none, "             " ANSI_ESC_YELLOW " ***************************************************** ");
+    printfln(s_tag.none, "             " ANSI_ESC_YELLOW " ******************************************************************** ");
     printfln(s_tag.none, "             " ANSI_ESC_YELLOW " *     MiniWebRadio {:29}    * " ANSI_ESC_RESET "      ", version);
-    printfln(s_tag.none, "             " ANSI_ESC_YELLOW " ***************************************************** ");
+    printfln(s_tag.none, "             " ANSI_ESC_YELLOW " ******************************************************************** ");
     printfln(s_tag.none, "");
 
     mutex_rtc = xSemaphoreCreateMutex();
@@ -1296,7 +1297,7 @@ void setup() {
 
     ticker100ms.attach(0.1, timer100ms);
 
-    muteChanged(s_f_mute);
+    muteChanged(s_f_mute, false);
     if (s_f_isWiFiConnected) {
         if (s_resetReason == ESP_RST_POWERON ||   // Simply switch on the operating voltage
             s_resetReason == ESP_RST_SW ||        // ESP.restart()
@@ -1312,6 +1313,20 @@ void setup() {
             printfln(s_tag.wifi_info, "mDNS name: " ANSI_ESC_YELLOW "MiniWebRadio");
         }
         ArduinoOTA.setHostname("MiniWebRadio");
+        //-AC- OTA checks
+        ArduinoOTA.onStart([]() {
+            Serial.printf("OTA Start. Free Heap: %lu\n", ESP.getFreeHeap());
+            // Stop web servers or heavy background tasks here if applicable
+        });
+
+        ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+            yield(); // Keeps TCP pipeline active to prevent packet drop timeouts
+        });
+
+        ArduinoOTA.onError([](ota_error_t error) {
+            Serial.printf("OTA Error[%u]\n", error);
+        });
+        //-AC- end changes
         ArduinoOTA.begin();
         ftpSrv.begin(SD_MMC, FTP_USERNAME, FTP_PASSWORD); // username, password for fgetTP().
         s_f_dlnaSeekServer = true;
@@ -1565,7 +1580,7 @@ uint8_t downvolume() {
     sdr_PL_volume.setValue(s_volume.cur_volume);
     sdr_RA_volume.setValue(s_volume.cur_volume);
     s_f_mute = false;
-    muteChanged(s_f_mute); // set mute off
+    muteChanged(s_f_mute, false); // set mute off
     return s_volume.cur_volume;
 }
 
@@ -1582,7 +1597,7 @@ uint8_t upvolume() {
     sdr_PL_volume.setValue(s_volume.cur_volume);
     sdr_RA_volume.setValue(s_volume.cur_volume);
     s_f_mute = false;
-    muteChanged(s_f_mute); // set mute off
+    muteChanged(s_f_mute, false); // set mute off
     return s_volume.cur_volume;
 }
 
@@ -1743,7 +1758,7 @@ bool SD_delete(ps_ptr<char> itemPath) {
 
 void fall_asleep() {
     s_f_sleeping = true;
-    muteChanged(true);
+    muteChanged(true, false);
     s_f_playlistEnabled = false;
     s_f_isFSConnected = false;
     s_f_isWebConnected = false;
@@ -1760,7 +1775,7 @@ void fall_asleep() {
 void wake_up(int8_t state, int8_t subState) {
     s_f_sleeping = false;
     if (s_bt_emitter.found && s_bt_emitter.enabled) bt_emitter.power_on(s_bt_emitter.mode);
-    muteChanged(false);
+    muteChanged(false, true);
     printfln(s_tag.action, "awake");
     clearAll(TFT_TRANSPARENT);
     clk_CL_24.hide();
@@ -1811,7 +1826,7 @@ boolean copySDtoFFat(const char* path) {
     return false;
 }
 
-void muteChanged(bool m) {
+void muteChanged(bool m, bool persist = true) { //-AC- add persist check
     s_f_muteIsPressed = false;
     btn_CL_mute.setValue(m);
     btn_DL_mute.setValue(m);
@@ -1835,7 +1850,8 @@ void muteChanged(bool m) {
     }
     dispHeader.speakerOnOff(!s_f_mute);
     dispHeader.updateVolume(s_volume.cur_volume);
-    updateSettings();
+    //updateSettings();
+    if (persist) updateSettings(); //-AC- only if persistent change
 };
 
 void logAlarmItems() {
@@ -1925,7 +1941,8 @@ void changeState(int8_t state, int8_t subState) {
             if (AUDIO_SWITCH >= 0) digitalWrite(AUDIO_SWITCH, HIGH);  // -AC- switch to RADIO
             // -AC- Unmute when returning from Bluetooth
             if (newState && s_state == BLUETOOTH) {
-                muteChanged(false);
+                //muteChanged(true);
+                muteChanged(true, false); //-AC- non persistent
             }
             
             if (newState) {
@@ -2164,7 +2181,8 @@ void changeState(int8_t state, int8_t subState) {
             txt_BT_mode.show();
             
             if (newState && s_state == RADIO) {
-                muteChanged(true);
+                //muteChanged(true);
+                muteChanged(true, false); //-AC- non persistent
             }
 
             btn_BT_radio.show(); //to get back to radio mode
@@ -2187,7 +2205,7 @@ void changeState(int8_t state, int8_t subState) {
                 printfln(s_tag.action, ANSI_ESC_MAGENTA "Alarm");
                 setVolume(s_volume.ringVolume);
                 audio.setVolume(s_volume.ringVolume);
-                muteChanged(false);
+                muteChanged(false, false);
                 connecttoFS("SD_MMC", "/ring/alarm_clock.mp3");
                 clk_RI_24small.set_bg_color(TFT_BLACK);
                 clk_RI_24small.show();
@@ -3050,7 +3068,7 @@ void ir_short_key(int8_t key) {
 
     switch (key) {
         case 10: // MUTE  ----------------------------------------------------------------------------------------------------------------------------
-            muteChanged(!s_f_mute);
+            muteChanged(!s_f_mute, true);
             return;
         case 11: // ARROW RIGHT  ---------------------------------------------------------------------------------------------------------------------
             if (s_state == RADIO) {
@@ -3648,7 +3666,7 @@ void WEBSRV_onCommand(ps_ptr<char> cmd, ps_ptr<char> param, ps_ptr<char> arg){  
                                         return;}
 
     CMD_EQUALS("get_mute"){             s_f_mute == true ? webSrv.send("mute=", "1") : webSrv.send("mute=", "0"); return;}
-    CMD_EQUALS("set_mute"){             muteChanged(!s_f_mute); return;}
+    CMD_EQUALS("set_mute"){             muteChanged(!s_f_mute, true); return;}
     CMD_EQUALS("upvolume"){             webSrv.send("volume=", int2str(upvolume()));  return;}                                                            // via websocket
     CMD_EQUALS("downvolume"){           webSrv.send("volume=", int2str(downvolume())); return;}                                                           // via websocket
     CMD_EQUALS("get_volumeSteps"){      webSrv.send("volumeSteps=", int2str(s_volume.volumeSteps)); return;}
@@ -4396,7 +4414,7 @@ void graphicObjects_OnRelease(ps_ptr<char> name, releasedArg ra) {
     if (name.equals("dispFooter")) { goto exit; }
 
     if (s_state == RADIO) {
-        if (name.equals("btn_RA_mute"))     { muteChanged(btn_RA_mute.getValue()); goto exit; }
+        if (name.equals("btn_RA_mute"))     { muteChanged(btn_RA_mute.getValue(), true); goto exit; }
         if (name.equals("btn_RA_recorder")) { s_f_recording = btn_RA_recorder.getValue(); goto exit; }
         if (name.equals("btn_RA_prevSta"))  { prevFavStation(); dispFooter.updateStation(s_cur_station); goto exit; }
         if (name.equals("btn_RA_nextSta"))  { nextFavStation(); dispFooter.updateStation(s_cur_station); goto exit; }
@@ -4416,7 +4434,7 @@ void graphicObjects_OnRelease(ps_ptr<char> name, releasedArg ra) {
         if (name.equals("lst_RADIO"))       { if (ra.val1) { setStationByNumber(ra.val1); changeState(RADIO, 0); } goto exit; }
     }
     if (s_state == PLAYER) {
-        if (name.equals("btn_PL_mute"))     { muteChanged(btn_PL_mute.getValue()); goto exit; }
+        if (name.equals("btn_PL_mute"))     { muteChanged(btn_PL_mute.getValue(), true); goto exit; }
         if (name.equals("btn_PL_pause"))    { if (s_f_isFSConnected) { s_f_pauseResume = audio.pauseResume(); } goto exit; }
         if (name.equals("btn_PL_cancel"))   { stopSong(); changeState(PLAYER, 0); if(s_f_ok_from_ir) { s_ir_btn_select = 0; set_ir_pos_PL(0); } goto exit; }
         if (name.equals("btn_PL_showPrevFile")) { if(s_ir_btn_select == 0) set_ir_pos_PL(0); goto exit; }
@@ -4453,7 +4471,7 @@ void graphicObjects_OnRelease(ps_ptr<char> name, releasedArg ra) {
                                               goto exit; }
     }
     if (s_state == DLNA) {
-        if (name.equals("btn_DL_mute"))     { muteChanged(btn_DL_mute.getValue());   if(s_ir_btn_select == 0) set_ir_pos_DL(0); goto exit; }
+        if (name.equals("btn_DL_mute"))     { muteChanged(btn_DL_mute.getValue(), true);   if(s_ir_btn_select == 0) set_ir_pos_DL(0); goto exit; }
         if (name.equals("btn_DL_pause"))    { s_f_pauseResume = audio.pauseResume(); if(s_ir_btn_select == 1) set_ir_pos_DL(0); goto exit; }
         if (name.equals("btn_DL_cancel"))   { stopSong();
                                               txt_DL_fName.setText("");
@@ -4490,7 +4508,7 @@ void graphicObjects_OnRelease(ps_ptr<char> name, releasedArg ra) {
                                             }
     }
     if (s_state == CLOCK) {
-        if (name.equals("btn_CL_mute"))     { muteChanged(btn_CL_mute.getValue()); if(s_ir_btn_select == 2) set_ir_pos_CL(2); goto exit; }
+        if (name.equals("btn_CL_mute"))     { muteChanged(btn_CL_mute.getValue(), true); if(s_ir_btn_select == 2) set_ir_pos_CL(2); goto exit; }
         if (name.equals("btn_CL_alarm"))    { changeState(ALARMCLOCK, 0); if(s_f_ok_from_ir) { s_ir_btn_select = 0; set_ir_pos_AC(0); } goto exit; }
         if (name.equals("btn_CL_radio"))    { changeState(RADIO, 0); goto exit; }
         if (name.equals("clk_CL_24"))       { changeState(CLOCK, 0); goto exit; }
@@ -4519,7 +4537,7 @@ void graphicObjects_OnRelease(ps_ptr<char> name, releasedArg ra) {
     if (s_state == EQUALIZER) {
         if (name.equals("btn_EQ_Radio"))    { changeState(RADIO, 0); goto exit; }
         if (name.equals("btn_EQ_Player"))   { changeState(PLAYER, 0); goto exit; }
-        if (name.equals("btn_EQ_mute"))     { muteChanged(btn_EQ_mute.getValue()); if(s_ir_btn_select == 2) set_ir_pos_EQ(2); goto exit; }
+        if (name.equals("btn_EQ_mute"))     { muteChanged(btn_EQ_mute.getValue(), true); if(s_ir_btn_select == 2) set_ir_pos_EQ(2); goto exit; }
         if (name.equals("btn_EQ_BAL"))      {                                      if(s_ir_btn_select == 3) set_ir_pos_EQ(3); goto exit; }
         if (name.equals("btn_EQ_LP"))       {                                      if(s_ir_btn_select == 4) set_ir_pos_EQ(4); goto exit; }
         if (name.equals("btn_EQ_BP"))       {                                      if(s_ir_btn_select == 5) set_ir_pos_EQ(5); goto exit; }

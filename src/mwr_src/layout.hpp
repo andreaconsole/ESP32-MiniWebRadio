@@ -209,8 +209,11 @@ constexpr coor winName = coor().pos(h_area, h_footer).size(h_res - h_area, h_are
 constexpr coor winProgbar = coor().pos(0, y_progbar).size(h_res, h_progBar).pad(5, 5, 0, 0);        // or volume slider
 constexpr coor winArea1 = coor().pos(0, h_footer).size(h_res, h_area).pad(0, 5, 0, 3);
 constexpr coor winArea2 = coor().pos(0, y_area2).size(h_res, h_area).pad(0, 5, 0, 3);
-//constexpr coor winSTitle = coor().pos(0, y_area2).size(h_res - w_vuMeter, h_area).pad(0, 4, 0, 3); //-AC- old vumeter
-constexpr coor winSTitle = coor().pos(0, y_area2).size(h_res, h_area - h_vuMeter).pad(0, 4, 0, 3); // -AC- new vuMeter does not interfere with the title width, but with its height
+// -AC- new vuMeter does not interfere with the title width, but with its height
+// -AC- Also, added left padding (0->20 px) and increased rigth padding (4->10)
+//constexpr coor winSTitle = coor().pos(0, y_area2).size(h_res - w_vuMeter, h_area).pad(0, 4, 0, 3); 
+constexpr coor winSTitle = coor().pos(0, y_area2).size(h_res, h_area - h_vuMeter).pad(20, 10, 0, 3); 
+//-AC- end change
 constexpr coor winVUmeter = coor().pos(h_res - w_vuMeter, y_area2).size(w_vuMeter, h_area);
 constexpr coor winFooter = coor().pos(0, v_res - h_footer).size(h_res, h_footer);
 constexpr coor winButton = coor().pos(0, y_btn).size(hw_btn, hw_btn);

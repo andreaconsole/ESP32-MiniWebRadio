@@ -3307,6 +3307,25 @@ function appendToTerminal(text) {
                 </div>
                 <hr>
                 <div style="height: 66px; display: flex;">
+                    <img src="SD/png/Button_Volume_Down_Blue.png" alt="Vol_down"
+                        onmousedown="this.src='SD/png/Button_Volume_Down_Yellow.png'"
+                        ontouchstart="this.src='SD/png/Button_Volume_Down_Yellow.png'"
+                        onmouseup="this.src='SD/png/Button_Volume_Down_Blue.png'"
+                        ontouchend="this.src='SD/png/Button_Volume_Down_Blue.png'"
+                        onclick="socket.send('downvolume')">
+                    <img src="SD/png/Button_Volume_Up_Blue.png" alt="Vol_up"
+                        onmousedown="this.src='SD/png/Button_Volume_Up_Yellow.png'"
+                        ontouchstart="this.src='SD/png/Button_Volume_Up_Yellow.png'"
+                        onmouseup="this.src='SD/png/Button_Volume_Up_Blue.png'"
+                        ontouchend="this.src='SD/png/Button_Volume_Up_Blue.png'"
+                        onclick="socket.send('upvolume')">
+                    <img id="Mute" src="SD/png/Button_Mute_Green.png" alt="Mute"
+                        onmousedown="this.src='SD/png/Button_Mute_Yellow.png'"
+                        ontouchstart="this.src='SD/png/Button_Mute_Yellow.png'"
+                        onclick="socket.send('set_mute')">
+                </div>
+                <hr>
+                <div style="height: 66px; display: flex;">
                     <div style="flex:1;">
                         <input type="text" class="boxstyle" style="width: calc(100% - 8px);"
                                id="resultstr3" placeholder="Your WebFile-URL....">
@@ -3854,7 +3873,7 @@ function appendToTerminal(text) {
 <!--===============================================================================================================================================-->
     <div id="tab-content9"> <!-- KCX BT Emitter Settings -->
         <div style="text-align: center; margin: 8px 0;">
-            <button class="button_120x30 buttonblue" onclick="activateBluetooth()">Activate Bluetooth</button>
+            <button class="button_120x30 buttonblue" onclick="activateBluetooth()">Activate BT</button>
         </div>
         <div style="display:flex">
             <div id="div-BT-logo" style="flex: 0 0 150px;">

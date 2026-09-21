@@ -472,7 +472,7 @@ void         connecttohost(ps_ptr<char> host);
 void         connecttoFS(const char* FS, ps_ptr<char> filename, uint32_t fileStartTime = 0);
 void         stopSong();
 void         placingGraphicObjects();
-void         muteChanged(bool m);
+void         muteChanged(bool m, bool persist);
 void         setTimeCounter(uint8_t sec);
 ps_ptr<char> get_WiFi_PW(const char* ssid);
 void         my_audio_info(Audio::msg_t m);
