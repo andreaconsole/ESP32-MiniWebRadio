@@ -2,7 +2,7 @@
 
 <img width="800" height="432" alt="example2" src="https://github.com/user-attachments/assets/eb50ab85-3a70-4da3-bc42-3b7172691d74" />
 
-My personal version of the beautiful miniwebradio by schreibfaul1, with minimal adaptations in the look and behaviour:
+**My personal version of the beautiful miniwebradio by schreibfaul1, with minimal adaptations in the look and behaviour:**
 - different VU-meter (green bars at the bottom, magic-eye style) 
 - different default look - most info are hidden unless the screen is touched
 - little changes to the web interface for easier control
@@ -56,8 +56,9 @@ Schematic<br>SPI Display
 ![Schematic ESP32-S3 with external DAC](docs/MWR_S3_SPI_Display_schematic.jpg)<br>
 <br>
 
-My additional schematic:
+**My additional schematics:**
 <img width="1122" height="660" alt="circuit" src="https://github.com/user-attachments/assets/2404cdd0-3adf-4a9d-b954-9a161e8174eb" />
+<img width="604" height="553" alt="image" src="https://github.com/user-attachments/assets/dff36c26-b2dd-47c8-a44d-0f27ef59b6e1" />
 
 
 [Display Layout](docs/MiniWebRadio%20V3.4%20Layout.pdf)<br>
