@@ -1,6 +1,10 @@
 # ESP32-S3-MiniWebRadio V4
 
+Final device
 <img width="800" height="432" alt="example2" src="https://github.com/user-attachments/assets/eb50ab85-3a70-4da3-bc42-3b7172691d74" />
+
+Concept
+<img width="800" height="533" alt="image" src="https://github.com/user-attachments/assets/ee8d7844-5148-45a7-95da-ccee50c98f8f" />
 
 **My personal version of the beautiful miniwebradio by schreibfaul1, with minimal adaptations in the look and behaviour:**
 - different VU-meter (green bars at the bottom, magic-eye style) 
