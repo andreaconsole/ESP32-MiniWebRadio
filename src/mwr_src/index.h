@@ -1312,6 +1312,7 @@ function showTab1 () {
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
+    document.getElementById('btn9').src = 'SD/png/BT_Blue.png'
 }
 
 function showTab2 () {
@@ -1332,6 +1333,7 @@ function showTab2 () {
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
+    document.getElementById('btn9').src = 'SD/png/BT_Blue.png'
 }
 
 function showTab3 () {
@@ -1352,6 +1354,7 @@ function showTab3 () {
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
+    document.getElementById('btn9').src = 'SD/png/BT_Blue.png'
 }
 
 function showTab4 () {
@@ -1372,6 +1375,7 @@ function showTab4 () {
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
+    document.getElementById('btn9').src = 'SD/png/BT_Blue.png'
 }
 
 function showTab5 () {
@@ -1392,6 +1396,7 @@ function showTab5 () {
     document.getElementById('btn5').src = 'SD/png/Search_Yellow.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
+    document.getElementById('btn9').src = 'SD/png/BT_Blue.png'
     document.getElementById("RB_search").value = "";
 }
 
@@ -1413,6 +1418,7 @@ function showTab6 () {
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Yellow.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
+    document.getElementById('btn9').src = 'SD/png/BT_Blue.png'
     loadRingVolume()
     loadVolumeAfterAlarm()
     loadVolumeSteps()
@@ -1440,6 +1446,7 @@ function showTab7 () {
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Yellow.png'
+    document.getElementById('btn9').src = 'SD/png/BT_Blue.png'
 }
 
 function showTab8 () {  // Remote Control
@@ -1460,6 +1467,7 @@ function showTab8 () {  // Remote Control
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
+    document.getElementById('btn9').src = 'SD/png/BT_Blue.png'
     loadFileFromSD("/ir_buttons.json", "application/json")
         .then(data => {ir_buttons = data;});
     writeJSONToTable(ir_buttons)
@@ -1484,6 +1492,7 @@ function showTab9 () {  // KCX BT Emitter
     document.getElementById('btn5').src = 'SD/png/Search_Green.png'
     document.getElementById('btn6').src = 'SD/png/Settings_Green.png'
     document.getElementById('btn7').src = 'SD/png/About_Green.png'
+    document.getElementById('btn9').src = 'SD/png/BT_Yellow.png'
 }
 
 
@@ -3096,13 +3105,7 @@ function appendToTerminal(text) {
             <img id="btn5" src="SD/png/Search_Green.png" alt="search" onclick="showTab5()">
             <img id="btn6" src="SD/png/Settings_Green.png" alt="settings" onclick="showTab6()">
             <img id="btn7" src="SD/png/About_Green.png" alt="info" onclick="showTab7()">
-            <button id="modeSwitchHome" class="mwr-mode-switch"
-                    type="button" onclick="toggleRadioBluetooth()"
-                    title="Switch between Radio and Bluetooth mode"
-                    aria-label="Switch to Bluetooth mode">→ BT</button>
-            <img id="BT_Power_Home" src="SD/png/BT_Blue.png" alt="bluetooth power"
-                    title="Bluetooth on/off" style="margin-left: 10px;"
-                    onclick="socket.send('KCX_BT_power')">
+            <img id="btn9" src="SD/png/BT_Blue.png" alt="info" onclick="showTab9()">
         </div>
         <div class="mwr-title" style="font-size: 50px; text-align: center; flex: 1; padding-left: 0;">
             MiniWebRadio
