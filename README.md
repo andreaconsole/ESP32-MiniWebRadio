@@ -1,19 +1,14 @@
 # ESP32-S3-MiniWebRadio V4
 
-Final device
-<img width="800" height="432" alt="example2" src="https://github.com/user-attachments/assets/eb50ab85-3a70-4da3-bc42-3b7172691d74" />
+Original concept
 
-Concept
 <img width="800" height="533" alt="image" src="https://github.com/user-attachments/assets/ee8d7844-5148-45a7-95da-ccee50c98f8f" />
 
+Final device
+
+<img width="800" height="432" alt="example2" src="https://github.com/user-attachments/assets/eb50ab85-3a70-4da3-bc42-3b7172691d74" />
+
 **My personal version of the beautiful miniwebradio by schreibfaul1, with minimal adaptations in the look and behaviour**
-**Main changes**
-- (SW) different VU-meter (green bars at the bottom, magic-eye style) 
-- (SW) different default look for the radio interface - most info are hidden unless the screen is touched
-- (SW) changes to the web interface for easier control (to my taste)
-- (HW+SW) physical audio switch to physically separate BT source from the webradio output
-- (HW) improved power management for better isolation between BT and ESP32 on the power side
-- (SW) here and there, addressing minor hiccups with the software
 
 MiniWebRadio Features:
 <ul>
@@ -34,16 +29,27 @@ MiniWebRadio Features:
 <li>Supports the Latin, Greek and Cyrillic character sets</li>
 <li><a href="https://www.radio-browser.info/">Community Radio Browser</a> is integrated as a search engine. User can find new stations and then add them to the station list via web UI (with station icon if available) and then save the list and station icon file to the SD card</li>
 <li>Channel lists can be exported or imported in Excel format (for data backup).</li>
-</ul><br>
+</ul>
+
+**Main changes**
+- (SW) different VU-meter (green bars at the bottom, magic-eye style) 
+- (SW) different default look for the radio interface - most info are hidden unless the screen is touched
+- (SW) changes to the web interface for easier control (to my taste)
+- (HW+SW) physical audio switch to physically separate BT source from the webradio output
+- (HW) improved power management for better isolation between BT and ESP32 on the power side
+- (SW) here and there, addressing minor hiccups with the software
+
+
 Required HW:
 <ul>
-<li>ESP32-S3 board <b>with 4MB PSRAM or larger</b></li>
+<li>ESP32-S3 board <b>with 16MB PSRAM or larger</b></li>
 <li>DAC (e.g. PCM5102a)</li>
 <li>TFT Display with Touchpad (SPI), Display controller can be ILI9341 (320x240px), ILI9486 (480x320px), ILI9488 (480x320px), ST7796 (480x320px) or
 RGB Display (800x480) with Touchpad (I2C) or DSI Display (1024x600) with Touchpad (I2C)  </li>
 <li>SD Card (FAT32) + SD adapter (can use SD slot on back of TFT display if available)</li>
+<li> (my addition) max4053/cd4053 - low-voltage, CMOS analog multiplexer/demultiplexer featuring three independent SPDT (Single-Pole/Double-Throw) switches</li>
+<li> (my addition) Capacitors, inductor according to the schematic below</li>
 
-![Display sizes](docs/Displaysizes.jpg)
 [Tested displays](docs/tested_displays.pdf)  
 
 The display **"Crowpanel ESP32 P4-Advance HMI Display 7.0 V1.0 SKU:DHE04107D"** cannot be used due to a design error on the board!
@@ -52,7 +58,7 @@ The display **"Crowpanel ESP32 P4-Advance HMI Display 7.0 V1.0 SKU:DHE04107D"** 
 Optional HW:
 <ul>
 <li>IR receiver + IR remote controller according to the NFC protocol</li>
-<li>KCX_BT_EMITTER V1.7, for connecting external Bluetooth devices, needs sufficient free GPIOs</li>
+<li>KCX_BT_EMITTER V1.7, for connecting external Bluetooth devices</li>
 <li>BH1750 light sensor: The BH1750 has a wide range of values, which is still sufficiently sensitive at average room brightness. On the display, you can set the desired brightness when the sensor is darkened. Then the display is dimmed to this value 'at night', needs sufficient free GPIOs.</li>
 </ul><br>
 
