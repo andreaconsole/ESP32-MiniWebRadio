@@ -3676,6 +3676,14 @@ void WEBSRV_onCommand(ps_ptr<char> cmd, ps_ptr<char> param, ps_ptr<char> arg){  
 
     CMD_EQUALS("ping"){                 webSrv.send("pong"); return;}                                                                                     // via websocket
 
+    CMD_EQUALS("ESP_restart"){          printfln(s_tag.webserver, ANSI_ESC_YELLOW "Restart requested from web UI");    // -AC- new command
+                                        webSrv.send("restarting=", "1");
+                                        msg_box.setText("ESP restart", false);
+                                        msg_box.show();
+                                        s_f_msg_box = true;
+                                        s_f_esp_restart = true;
+                                        return;}
+    
     CMD_EQUALS("index.html"){           printfln(s_tag.webserver, "Webpage: " ANSI_ESC_ORANGE "index.html");                                                     // via XMLHttpRequest
                                         webSrv.show(index_html, webSrv.TEXT);
                                         return;}
