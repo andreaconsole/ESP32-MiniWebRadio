@@ -6,12 +6,14 @@ Final device
 Concept
 <img width="800" height="533" alt="image" src="https://github.com/user-attachments/assets/ee8d7844-5148-45a7-95da-ccee50c98f8f" />
 
-**My personal version of the beautiful miniwebradio by schreibfaul1, with minimal adaptations in the look and behaviour:**
-- different VU-meter (green bars at the bottom, magic-eye style) 
-- different default look - most info are hidden unless the screen is touched
-- little changes to the web interface for easier control
-- physical audio switch to separate BT source from the webradio
-- better isolation between BT and ESP32 on the power side
+**My personal version of the beautiful miniwebradio by schreibfaul1, with minimal adaptations in the look and behaviour**
+**Main changes**
+- (SW) different VU-meter (green bars at the bottom, magic-eye style) 
+- (SW) different default look for the radio interface - most info are hidden unless the screen is touched
+- (SW) changes to the web interface for easier control (to my taste)
+- (HW+SW) physical audio switch to physically separate BT source from the webradio output
+- (HW) improved power management for better isolation between BT and ESP32 on the power side
+- (SW) here and there, addressing minor hiccups with the software
 
 MiniWebRadio Features:
 <ul>
