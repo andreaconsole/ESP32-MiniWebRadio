@@ -1401,7 +1401,7 @@ function showTab5 () {
 }
 
 function showTab6 () {
-    console.log('tab-content5 (Search Stations)')
+    console.log('tab-content5 (Settings)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
     document.getElementById('tab-content3').style.display = 'none'
@@ -1475,7 +1475,7 @@ function showTab8 () {  // Remote Control
 
 function showTab9 () {  // KCX BT Emitter
     updateModeSwitchButton()
-    console.log('tab-content8 (Remote Control)')
+    console.log('tab-content9 (Bluetooth)')
     document.getElementById('tab-content1').style.display = 'none'
     document.getElementById('tab-content2').style.display = 'none'
     document.getElementById('tab-content3').style.display = 'none'
@@ -2893,6 +2893,20 @@ function sendKcxRawCmd(){
 }
 // -AC-2 end
 
+// -AC-3 restart device from the web UI
+function restartDevice(){
+    if(!confirm("Restart MiniWebRadio now? Playback will stop and the device will reboot."))
+        return
+    if(!socket || socket.readyState !== WebSocket.OPEN){
+        toastr.error("Not connected")
+        return
+    }
+    console.log("requesting device restart")
+    socket.send("ESP_restart")
+    toastr.info("Restarting…")
+}
+// -AC-3 end
+
 function show_BT_scannedItems(jsonstr){
     console.log('KCX_BT_SCANNED', jsonstr)
     var jsonData = JSON.parse(jsonstr)
@@ -3642,6 +3656,12 @@ function appendToTerminal(text) {
                             </select>
                             <label for="selVolumeSteps">Current Volume Steps: </label>
                             <span class="txtVolumeSteps" id="txtVolumeSteps"></span>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <legend> device </legend>
+                        <div>
+                            <button onclick="restartDevice()">Restart device</button>
                         </div>
                     </fieldset>
                 </td>

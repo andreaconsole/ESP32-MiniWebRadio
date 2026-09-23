@@ -307,6 +307,7 @@ struct tag_s {
     ps_ptr<char> audio_info = "Audio_Info:";
     ps_ptr<char> wifi_info = "WiFi_Info:";
     ps_ptr<char> setup = "Setup:";
+    ps_ptr<char> loop = "Loop:";
     ps_ptr<char> new_host = "New_Host:";
     ps_ptr<char> playlist = "Playlist:";
     ps_ptr<char> sd_card = "SD_Card:";

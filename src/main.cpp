@@ -9,7 +9,7 @@
     MiniWebRadio -- Webradio receiver for ESP32-S3
 
     first release on 03/2017                                                                                                      */char Version[] ="\
-    V 1.0.2 - 13 Sept 2026 (Forked from 4.2.0t2)                                                                                                     ";
+    V 1.0.3 - 23 Sept 2026 (Forked from 4.2.0t2)                                                                                                     ";
 
 /*  display (320x240px) with controller ILI9341 or
     display (480x320px) with controller ILI9486, ILI9488 or ST7796 (SPI) or
@@ -88,6 +88,7 @@ bool s_f_100ms = false;
 bool s_f_1sec = false;
 bool s_f_10sec = false;
 bool s_f_1min = false;
+bool s_f_otaInProgress = false; // -AC- true while an OTA transfer is active
 bool s_f_mute = false;
 bool s_f_muteIsPressed = false;
 bool s_f_recording = false;
@@ -1316,15 +1317,21 @@ void setup() {
         //-AC- OTA checks
         ArduinoOTA.onStart([]() {
             Serial.printf("OTA Start. Free Heap: %lu\n", ESP.getFreeHeap());
-            // Stop web servers or heavy background tasks here if applicable
+            s_f_otaInProgress = true;
+            audio.stopSong();    
         });
 
         ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
             yield(); // Keeps TCP pipeline active to prevent packet drop timeouts
         });
 
+        ArduinoOTA.onEnd([]() {
+            Serial.println("OTA End"); // ArduinoOTA reboots the device right after this on success
+        });
+
         ArduinoOTA.onError([](ota_error_t error) {
             Serial.printf("OTA Error[%u]\n", error);
+            s_f_otaInProgress = false; // failed/aborted — go back to normal operation
         });
         //-AC- end changes
         ArduinoOTA.begin();
@@ -2275,16 +2282,37 @@ ps_ptr<char> get_WiFi_PW(const char* ssid) {
 
 void loop() {
     vTaskDelay(1);
-    dlna.loop();
-    audio.loop();
-    webSrv.loop();
-    ftpSrv.handleFTP();
-    ir.loop();
-    getTP().loop();
+     //-AC- instrument loop calls for time tracking
+    //dlna.loop();
+    //audio.loop();
+    //webSrv.loop();
+    //ftpSrv.handleFTP();
+    //ir.loop();
+    //getTP().loop();
     ArduinoOTA.handle();
-    bt_emitter.loop();
-    getTFT().loop();
-    BH1750.loop();
+    //bt_emitter.loop();
+    //getTFT().loop();
+    //BH1750.loop();
+    
+    if (s_f_otaInProgress) { getTFT().loop(); return; }
+
+    #define TIMED_CALL(name, call) do { \
+        uint32_t _t0 = millis(); \
+        call; \
+        uint32_t _dt = millis() - _t0; \
+        if (_dt > 150) printfln(s_tag.loop, ANSI_ESC_YELLOW "{} took {} ms", name, _dt); \
+    } while (0)
+    
+    TIMED_CALL("dlna.loop",    dlna.loop());
+    TIMED_CALL("audio.loop",   audio.loop());
+    TIMED_CALL("webSrv.loop",  webSrv.loop());
+    TIMED_CALL("ftpSrv",       ftpSrv.handleFTP());
+    TIMED_CALL("ir.loop",      ir.loop());
+    TIMED_CALL("tp.loop",      getTP().loop());
+    TIMED_CALL("bt.loop",      bt_emitter.loop());
+    TIMED_CALL("tft.loop",     getTFT().loop());
+    TIMED_CALL("bh1750.loop",  BH1750.loop());
+    //-AC- end change
 
     // -AC- store logs and send them to the web terminal when ready
     // while (s_logBuffer.size() > 0) {
@@ -3648,6 +3676,14 @@ void WEBSRV_onCommand(ps_ptr<char> cmd, ps_ptr<char> param, ps_ptr<char> arg){  
 
     CMD_EQUALS("ping"){                 webSrv.send("pong"); return;}                                                                                     // via websocket
 
+    CMD_EQUALS("ESP_restart"){          printfln(s_tag.webserver, ANSI_ESC_YELLOW "Restart requested from web UI");    // -AC- new command
+                                        webSrv.send("restarting=", "1");
+                                        msg_box.setText("ESP restart", false);
+                                        msg_box.show();
+                                        s_f_msg_box = true;
+                                        s_f_esp_restart = true;
+                                        return;}
+    
     CMD_EQUALS("index.html"){           printfln(s_tag.webserver, "Webpage: " ANSI_ESC_ORANGE "index.html");                                                     // via XMLHttpRequest
                                         webSrv.show(index_html, webSrv.TEXT);
                                         return;}
