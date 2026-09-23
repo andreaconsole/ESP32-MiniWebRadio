@@ -88,6 +88,7 @@ bool s_f_100ms = false;
 bool s_f_1sec = false;
 bool s_f_10sec = false;
 bool s_f_1min = false;
+bool s_f_otaInProgress = false; // -AC- true while an OTA transfer is active
 bool s_f_mute = false;
 bool s_f_muteIsPressed = false;
 bool s_f_recording = false;
@@ -1316,15 +1317,21 @@ void setup() {
         //-AC- OTA checks
         ArduinoOTA.onStart([]() {
             Serial.printf("OTA Start. Free Heap: %lu\n", ESP.getFreeHeap());
-            // Stop web servers or heavy background tasks here if applicable
+            s_f_otaInProgress = true;
+            audio.stopSong();    
         });
 
         ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
             yield(); // Keeps TCP pipeline active to prevent packet drop timeouts
         });
 
+        ArduinoOTA.onEnd([]() {
+            Serial.println("OTA End"); // ArduinoOTA reboots the device right after this on success
+        });
+
         ArduinoOTA.onError([](ota_error_t error) {
             Serial.printf("OTA Error[%u]\n", error);
+            s_f_otaInProgress = false; // failed/aborted — go back to normal operation
         });
         //-AC- end changes
         ArduinoOTA.begin();
@@ -2275,16 +2282,37 @@ ps_ptr<char> get_WiFi_PW(const char* ssid) {
 
 void loop() {
     vTaskDelay(1);
-    dlna.loop();
-    audio.loop();
-    webSrv.loop();
-    ftpSrv.handleFTP();
-    ir.loop();
-    getTP().loop();
+     //-AC- instrument loop calls for time tracking
+    //dlna.loop();
+    //audio.loop();
+    //webSrv.loop();
+    //ftpSrv.handleFTP();
+    //ir.loop();
+    //getTP().loop();
     ArduinoOTA.handle();
-    bt_emitter.loop();
-    getTFT().loop();
-    BH1750.loop();
+    //bt_emitter.loop();
+    //getTFT().loop();
+    //BH1750.loop();
+    
+    if (s_f_otaInProgress) { getTFT().loop(); return; }
+
+    #define TIMED_CALL(name, call) do { \
+        uint32_t _t0 = millis(); \
+        call; \
+        uint32_t _dt = millis() - _t0; \
+        if (_dt > 150) printfln(s_tag.loop, ANSI_ESC_YELLOW "{} took {} ms", name, _dt); \
+    } while (0)
+    
+    TIMED_CALL("dlna.loop",    dlna.loop());
+    TIMED_CALL("audio.loop",   audio.loop());
+    TIMED_CALL("webSrv.loop",  webSrv.loop());
+    TIMED_CALL("ftpSrv",       ftpSrv.handleFTP());
+    TIMED_CALL("ir.loop",      ir.loop());
+    TIMED_CALL("tp.loop",      getTP().loop());
+    TIMED_CALL("bt.loop",      bt_emitter.loop());
+    TIMED_CALL("tft.loop",     getTFT().loop());
+    TIMED_CALL("bh1750.loop",  BH1750.loop());
+    //-AC- end change
 
     // -AC- store logs and send them to the web terminal when ready
     // while (s_logBuffer.size() > 0) {
