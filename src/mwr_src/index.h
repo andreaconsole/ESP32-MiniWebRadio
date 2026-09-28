@@ -3147,10 +3147,10 @@ function appendToTerminal(text) {
                     onmouseup="this.src='SD/png/Button_Volume_Up_Blue.png'"
                     ontouchend="this.src='SD/png/Button_Volume_Up_Blue.png'"
                     onclick="socket.send('upvolume')">
-                <img id="Mute" src="SD/png/Button_Mute_Green.png" alt="Mute"
-                    onmousedown="this.src='SD/png/Button_Mute_Yellow.png'"
-                    ontouchstart="this.src='SD/png/Button_Mute_Yellow.png'"
-                    onclick="socket.send('set_mute')">
+				<img class="mute-btn" src="SD/png/Button_Mute_Green.png" alt="Mute"
+				     onmousedown="this.src='SD/png/Button_Mute_Yellow.png'"
+				     ontouchstart="this.src='SD/png/Button_Mute_Yellow.png'"
+				     onclick="socket.send('set_mute')">
             </div>
             <div style="flex: 0 0 210px;">
                 <img src="SD/png/Button_Previous_Green.png" alt="previous"
@@ -3326,10 +3326,10 @@ function appendToTerminal(text) {
                     onmouseup="this.src='SD/png/Button_Volume_Up_Blue.png'"
                     ontouchend="this.src='SD/png/Button_Volume_Up_Blue.png'"
                     onclick="socket.send('upvolume')">
-                <img id="Mute" src="SD/png/Button_Mute_Green.png" alt="Mute"
-                    onmousedown="this.src='SD/png/Button_Mute_Yellow.png'"
-                    ontouchstart="this.src='SD/png/Button_Mute_Yellow.png'"
-                    onclick="socket.send('set_mute')">
+				<img class="mute-btn" src="SD/png/Button_Mute_Green.png" alt="Mute"
+				     onmousedown="this.src='SD/png/Button_Mute_Yellow.png'"
+				     ontouchstart="this.src='SD/png/Button_Mute_Yellow.png'"
+				     onclick="socket.send('set_mute')">
             </div>
         </div>
         <div class="container" id="filetreeContainer">
