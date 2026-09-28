@@ -989,19 +989,21 @@ function connect() {
             }
 
             switch(msg) {
-                case "pong":
-                                            clearTimeout(tm); // Important: Clear the ping timeout when a pong arrives!
-                                            console.log("pong");
-                                            reconnectAttempts = 0;
-                                            toastr.clear(); // Only clear the warning if it is there
-                                            break;
-            case "mute":                if(val == '1'){ document.getElementById('Mute').src = 'SD/png/Button_Mute_Red.png'
-                                                        resultstr1.value = "mute on"
-                                                        console.log("mute on")}
-                                        if(val == '0'){ document.getElementById('Mute').src = 'SD/png/Button_Mute_Green.png'
-                                                        resultstr1.value = "mute off"
-                                                        console.log("mute off")}
-                                        break
+			case "pong":
+										clearTimeout(tm); // Important: Clear the ping timeout when a pong arrives!
+										console.log("pong");
+										reconnectAttempts = 0;
+										toastr.clear(); // Only clear the warning if it is there
+										break;
+			case "mute":
+									    const muteSrc = (val == '1') ? 'SD/png/Button_Mute_Red.png'
+									                  : (val == '0') ? 'SD/png/Button_Mute_Green.png' : null;
+									    if (muteSrc) {
+									        document.querySelectorAll('.mute-btn').forEach(b => b.src = muteSrc);
+									        resultstr1.value = (val == '1') ? "mute on" : "mute off";
+									        console.log(resultstr1.value);
+									    }
+									    break;
             case "tone":                resultstr1.value = val  // text shown in resultstr1 as info
                                         break
             case "settone":             lines = val.split('\n')
@@ -1259,7 +1261,8 @@ function activatePlayer () {
         toastr.warning('Not connected to MiniWebRadio');
         return;
     }
-    socket.send("change_state=PLAYER");
+	socket.send("change_state=PLAYER");
+	socket.send("get_mute");
 }
 
 function activateDLNA () {
