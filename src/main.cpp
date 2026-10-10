@@ -9,7 +9,7 @@
     MiniWebRadio -- Webradio receiver for ESP32-S3
 
     first release on 03/2017                                                                                                      */char Version[] ="\
-    V 1.0.3 - 23 Sept 2026 (Forked from 4.2.0t2)                                                                                                     ";
+    V 1.0.4 - 23 Sept 2026 (Forked from 4.2.0t2)                                                                                                     ";
 
 /*  display (320x240px) with controller ILI9341 or
     display (480x320px) with controller ILI9486, ILI9488 or ST7796 (SPI) or
@@ -378,7 +378,8 @@ void updateSettings() {
     jO.appendf(",\n  \"alarm_weekdays\":{}", s_alarmdays);
     jO.appendf(",\n  \"timeAnnouncing\":\"{}\"", s_f_timeAnnouncement);
     jO.appendf(",\n  \"timeSpeechLang\":\"{}\"", s_timeSpeechLang);
-    jO.appendf(",\n  \"mute\":\"{}\"", s_f_mute);
+    //jO.appendf(",\n  \"mute\":\"{}\"", s_f_mute); // -AC-
+    jO.appendf(",\n  \"mute\":\"false\"");   // -AC- mute is never persisted
     jO.appendf(",\n  \"vu_meter_enabled\":\"{}\"", s_f_vu_meter_enabled);
     jO.appendf(",\n  \"spectrum_enabled\":\"{}\"", s_f_spectrum_enabled);
     jO.appendf(",\n  \"brightness\":{}", s_brightness);
