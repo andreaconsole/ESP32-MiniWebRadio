@@ -9,7 +9,7 @@
     MiniWebRadio -- Webradio receiver for ESP32-S3
 
     first release on 03/2017                                                                                                      */char Version[] ="\
-    V 1.0.4 - 23 Sept 2026 (Forked from 4.2.0t2)                                                                                                     ";
+    V 1.0.5 - 18 Nov 2026 (Forked from 4.2.0t2)                                                                                                     ";
 
 /*  display (320x240px) with controller ILI9341 or
     display (480x320px) with controller ILI9486, ILI9488 or ST7796 (SPI) or
@@ -2002,26 +2002,24 @@ void changeState(int8_t state, int8_t subState) {
             if (subState == 1) {  // Mute, Vol+, Vol-, Sta+, Sta-, StaList
                 if(newSubState) {
                     sdr_RA_volume.show();
-                    btn_RA_mute.show(); btn_RA_prevSta.show(); btn_RA_nextSta.show(); btn_RA_recorder.show();
+                    btn_RA_mute.show(); btn_RA_prevSta.show(); btn_RA_nextSta.show(); btn_RA_recorder.show(); btn_RA_bt.show();
                     setTimeCounter(2);
                 }
                 else{
                     sdr_RA_volume.enable();
-                    btn_RA_mute.enable(); btn_RA_prevSta.enable(); btn_RA_nextSta.enable(); btn_RA_recorder.enable();
+                    btn_RA_mute.enable(); btn_RA_prevSta.enable(); btn_RA_nextSta.enable(); btn_RA_recorder.enable(); btn_RA_bt.enable();
                 }
             }
             if (subState == 2){ // Player, DLNA, Clock, SleepTime, Brightness, EQ, BT, Off
                 if(newSubState) {
                     btn_RA_staList.show();
                     btn_RA_player.show(); btn_RA_dlna.show(); btn_RA_clock.show(); btn_RA_sleep.show(); btn_RA_settings.show();
-                    btn_RA_bt.show();
                     btn_RA_off.show();
                     setTimeCounter(2);
                 }
                 else {
                     btn_RA_staList.enable();
                     btn_RA_player.enable(); btn_RA_dlna.enable(); btn_RA_clock.enable(); btn_RA_sleep.enable(); btn_RA_settings.enable();
-                    btn_RA_bt.enable();
                     btn_RA_off.enable();
                 }
             }
