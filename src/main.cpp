@@ -3904,6 +3904,13 @@ void WEBSRV_onCommand(ps_ptr<char> cmd, ps_ptr<char> param, ps_ptr<char> arg){  
     CMD_EQUALS("KCX_BT_upvolume"){      bt_emitter.upvolume();   return;}
     CMD_EQUALS("KCX_BT_getPower"){      bt_emitter.get_power_state() ? webSrv.send("KCX_BT_power=", "1") : webSrv.send("KCX_BT_power=", "0"); return;}
     CMD_EQUALS("KCX_BT_power"){         s_bt_emitter.enabled = !s_bt_emitter.enabled ; return;}
+    CMD_EQUALS("KCX_BT_reconnect"){      //-AC- new function 
+                                        if (BT_EMITTER_CONNECT >= 0) {
+                                            digitalWrite(BT_EMITTER_CONNECT, LOW);
+                                            delay(200);
+                                            digitalWrite(BT_EMITTER_CONNECT, HIGH);
+                                        }
+                                        return;}
 
     CMD_EQUALS("hardcopy"){             printfln(s_tag.webserver, "Webpage: " ANSI_ESC_YELLOW "create a display hardcopy"); make_hardcopy_on_sd(); webSrv.send("hardcopy=", "/hardcopy.bmp"); return;}
 
