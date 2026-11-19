@@ -1949,8 +1949,8 @@ void changeState(int8_t state, int8_t subState) {
             if (AUDIO_SWITCH >= 0) digitalWrite(AUDIO_SWITCH, HIGH);  // -AC- switch to RADIO
             // -AC- Unmute when returning from Bluetooth
             if (newState && s_state == BLUETOOTH) {
-                //muteChanged(true);
-                muteChanged(true, false); //-AC- non persistent
+                // -AC- Unmute when returning from Bluetooth
+                muteChanged(false, false); //-AC- non persistent
             }
             
             if (newState) {
@@ -3772,7 +3772,8 @@ void WEBSRV_onCommand(ps_ptr<char> cmd, ps_ptr<char> param, ps_ptr<char> arg){  
 
     CMD_EQUALS("get_timeZoneName"){     webSrv.reply(s_TZName, webSrv.TEXT); return;}
 
-    CMD_EQUALS("change_state"){         if     (param == "RADIO"       && s_state != RADIO)       { changeState(RADIO, 0); return; }
+    CMD_EQUALS("change_state"){         if (param != "BLUETOOTH") muteChanged(false, false);   // -AC- unmute for any non-BT function
+                                        if     (param == "RADIO"       && s_state != RADIO)       { changeState(RADIO, 0); return; }
                                         else if(param == "PLAYER"      && s_state != PLAYER)      { stopSong(); changeState(PLAYER, 0); return; }
                                         else if(param == "DLNA"        && s_state != DLNA)        { stopSong(); changeState(DLNA, 0);   return; }
                                         else if(param == "BLUETOOTH"   && s_state != BLUETOOTH)   { changeState(BLUETOOTH, 0); return; }
@@ -3905,6 +3906,7 @@ void WEBSRV_onCommand(ps_ptr<char> cmd, ps_ptr<char> param, ps_ptr<char> arg){  
     CMD_EQUALS("KCX_BT_getPower"){      bt_emitter.get_power_state() ? webSrv.send("KCX_BT_power=", "1") : webSrv.send("KCX_BT_power=", "0"); return;}
     CMD_EQUALS("KCX_BT_power"){         s_bt_emitter.enabled = !s_bt_emitter.enabled ; return;}
     CMD_EQUALS("KCX_BT_reconnect"){      //-AC- new function 
+                                        printfln(s_tag.webserver, "Webpage: " ANSI_ESC_YELLOW "BT disconnect pulse");                                 
                                         if (BT_EMITTER_CONNECT >= 0) {
                                             digitalWrite(BT_EMITTER_CONNECT, LOW);
                                             delay(200);

@@ -1296,6 +1296,15 @@ function activateBluetooth () {
     socket.send('KCX_BT_getMode');
 }
 
+function disconnectBluetooth () {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toastr.warning('Not connected to MiniWebRadio');
+        return;
+    }
+    socket.send('KCX_BT_reconnect');   // same pin pulse as the TFT button
+    toastr.info('Bluetooth disconnect sent');
+}
+
 function showTab1 () {
     updateModeSwitchButton()
     console.log('tab-content1 (Radio)')
@@ -3899,11 +3908,12 @@ function appendToTerminal(text) {
     <div id="tab-content9"> <!-- KCX BT Emitter Settings -->
         <div style="text-align: center; margin: 8px 0;">
             <button class="button_120x30 buttonblue" onclick="activateBluetooth()">Activate BT</button>
+            <button class="button_120x30 buttonblue" onclick="disconnectBluetooth()">Disconnect BT</button>
         </div>
         <div style="display:flex">
             <div id="div-BT-logo" style="flex: 0 0 150px;">
                 <img id="label-bt-logo" onclick="socket.send('KCX_BT_reconnect')">
-                <label for="label-logo" id="label-bt-mode"> Reconnect </label>
+                <label for="label-bt-logo" id="label-bt-mode"> Disconnect </label>
             </div>
         </div>
     </div>
